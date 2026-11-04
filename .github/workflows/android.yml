@@ -1,3 +1,4 @@
+
 name: Build DOWN TEST APK
 
 on:
@@ -23,6 +24,8 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
 
       - name: Install Android SDK
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
@@ -35,8 +38,9 @@ jobs:
       - name: Unpack Android project
         run: |
           mkdir project
-          unzip -o "$(find . -maxdepth 1 -name '*.zip' | head -n 1)" -d project
-          cd project/DOWN_TEST_Android_Project
+          ZIP=$(find . -maxdepth 1 -name '*.zip' | head -n 1)
+          test -n "$ZIP"
+          unzip -o "$ZIP" -d project
 
       - name: Build APK
         run: |
