@@ -1,5 +1,4 @@
 
-
 name: Build DOWN TEST APK
 
 on:
@@ -43,11 +42,16 @@ jobs:
           test -n "$ZIP"
           unzip -o "$ZIP" -d project
 
-      - name: Fix Java and Kotlin versions
+      - name: Force Java version 17
         run: |
           cd project/DOWN_TEST_Android_Project
-          sed -i 's/JavaVersion.VERSION_1_8/JavaVersion.VERSION_17/g' app/build.gradle.kts
-          sed -i 's/jvmTarget = "1.8"/jvmTarget = "17"/g' app/build.gradle.kts
+          cat >> app/build.gradle.kts <<'EOF'
+
+          tasks.withType<org.gradle.api.tasks.compile.JavaCompile>().configureEach {
+              sourceCompatibility = "17"
+              targetCompatibility = "17"
+          }
+          EOF
 
       - name: Build APK
         run: |
