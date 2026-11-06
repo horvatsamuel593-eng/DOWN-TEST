@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="DOWN TEST – zábavná mobilní aplikace s režimy DOWN TEST a AURA TEST.">
+  <title>DOWN TEST – Oficiální web</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      background: #090912;
+      text-align: center;
+    }
+    header { padding: 65px 20px 45px; }
+    h1 {
+      font-size: clamp(42px, 10vw, 76px);
+      margin: 0;
+      letter-spacing: 3px;
+    }
+    .glow { color: #a78bfa; }
+    header p { color: #c5c5d5; font-size: 18px; }
+    .content { max-width: 850px; margin: auto; padding: 20px; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin: 35px 0;
+    }
+    .card {
+      background: #171725;
+      border: 1px solid #34344b;
+      border-radius: 18px;
+      padding: 25px;
+    }
+    .card h2 { color: #c4b5fd; }
+    .download {
+      display: inline-block;
+      background: #8b5cf6;
+      color: white;
+      text-decoration: none;
+      padding: 17px 30px;
+      border-radius: 12px;
+      font-weight: bold;
+      margin: 15px;
+    }
+    .download:hover { background: #7c3aed; }
+    .note { color: #aaaabc; font-size: 13px; line-height: 1.6; }
+    footer { padding: 30px 15px; color: #77778c; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>DOWN <span class="glow">TEST</span></h1>
+    <p>Otestuj svůj náhodný výsledek! 💀</p>
+  </header>
+
+  <main class="content">
+    <h2>Vyber si svůj režim</h2>
+
+    <div class="cards">
+      <section class="card">
+        <h2>💀 DOWN TEST</h2>
+        <p>Zábavný náhodný test se skóre 0–100.</p>
+      </section>
+
+      <section class="card">
+        <h2>✨ AURA TEST</h2>
+        <p>Zjisti své náhodné Aura skóre 0–1000.</p>
+      </section>
+    </div>
+
+    <h2>📲 Chceš aplikaci?</h2>
+    <p>Stáhni si DOWN TEST pro Android.</p>
+    <a class="download"
+       href="https://github.com/horvatsamuel593-eng/DOWN-TEST/releases">
+       STÁHNOUT APK
+    </a>
+
+    <p class="note">
+      Výsledky jsou náhodné a slouží pouze pro zábavu.
+      Aplikace není zdravotnický ani diagnostický nástroj
+      a nesouvisí s diagnózou Downova syndromu.
+    </p>
+  </main>
+
+  <footer>
+    DOWN TEST © 2026
+  </footer>
+</body>
+</html>
