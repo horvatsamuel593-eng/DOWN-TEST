@@ -55,13 +55,7 @@ jobs:
 
           if [ -f app/build.gradle.kts ]; then
             cp app/build.gradle.kts "$PROJECT_DIR/app/build.gradle.kts"
-            echo "Fixed app/build.gradle.kts copied."
           fi
-
-          echo "tasks.withType<org.gradle.api.tasks.compile.JavaCompile>().configureEach {" >> "$PROJECT_DIR/app/build.gradle.kts"
-          echo "    sourceCompatibility = \"17\"" >> "$PROJECT_DIR/app/build.gradle.kts"
-          echo "    targetCompatibility = \"17\"" >> "$PROJECT_DIR/app/build.gradle.kts"
-          echo "}" >> "$PROJECT_DIR/app/build.gradle.kts"
 
           echo "$PROJECT_DIR" > project_path.txt
 
