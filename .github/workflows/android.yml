@@ -1,4 +1,5 @@
 
+
 name: Build DOWN TEST APK
 
 on:
@@ -6,6 +7,7 @@ on:
   push:
     paths:
       - '**.zip'
+      - 'app/build.gradle.kts'
       - '.github/workflows/android.yml'
 
 jobs:
@@ -38,28 +40,39 @@ jobs:
       - name: Unpack Android project
         run: |
           mkdir project
-          ZIP=$(find . -name '*.zip' | head -n 1)
+          ZIP=$(find . -maxdepth 1 -name '*.zip' | head -n 1)
           test -n "$ZIP"
+          echo "Using ZIP: $ZIP"
           unzip -o "$ZIP" -d project
 
-      - name: Force Java version 17
+      - name: Find project and apply fixed file
         run: |
-          cd project/DOWN_TEST_Android_Project
-          cat >> app/build.gradle.kts <<'EOF'
+          SETTINGS=$(find project -name settings.gradle.kts -print -quit)
+          test -n "$SETTINGS"
+          PROJECT_DIR=$(dirname "$SETTINGS")
+          echo "Project directory: $PROJECT_DIR"
+          test -f "$PROJECT_DIR/app/build.gradle.kts"
 
-          tasks.withType<org.gradle.api.tasks.compile.JavaCompile>().configureEach {
-              sourceCompatibility = "17"
-              targetCompatibility = "17"
-          }
-          EOF
+          if [ -f app/build.gradle.kts ]; then
+            cp app/build.gradle.kts "$PROJECT_DIR/app/build.gradle.kts"
+            echo "Fixed app/build.gradle.kts copied."
+          fi
+
+          echo "tasks.withType<org.gradle.api.tasks.compile.JavaCompile>().configureEach {" >> "$PROJECT_DIR/app/build.gradle.kts"
+          echo "    sourceCompatibility = \"17\"" >> "$PROJECT_DIR/app/build.gradle.kts"
+          echo "    targetCompatibility = \"17\"" >> "$PROJECT_DIR/app/build.gradle.kts"
+          echo "}" >> "$PROJECT_DIR/app/build.gradle.kts"
+
+          echo "$PROJECT_DIR" > project_path.txt
 
       - name: Build APK
         run: |
-          cd project/DOWN_TEST_Android_Project
+          PROJECT_DIR=$(cat project_path.txt)
+          cd "$PROJECT_DIR"
           gradle assembleDebug
 
       - name: Save APK
         uses: actions/upload-artifact@v4
         with:
           name: DOWN-TEST-APK
-          path: project/DOWN_TEST_Android_Project/app/build/outputs/apk/debug/*.apk
+          path: project/**/app/build/outputs/apk/debug/*.apk
