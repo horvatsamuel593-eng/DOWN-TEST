@@ -8,6 +8,7 @@ on:
     paths:
       - '**.zip'
       - 'app/build.gradle.kts'
+      - 'app/src/main/java/cz/downtest/app/MainActivity.kt'
       - '.github/workflows/android.yml'
 
 jobs:
@@ -45,16 +46,20 @@ jobs:
           echo "Using ZIP: $ZIP"
           unzip -o "$ZIP" -d project
 
-      - name: Find project and apply fixed file
+      - name: Find project and apply fixed files
         run: |
           SETTINGS=$(find project -name settings.gradle.kts -print -quit)
           test -n "$SETTINGS"
           PROJECT_DIR=$(dirname "$SETTINGS")
-          echo "Project directory: $PROJECT_DIR"
           test -f "$PROJECT_DIR/app/build.gradle.kts"
 
           if [ -f app/build.gradle.kts ]; then
             cp app/build.gradle.kts "$PROJECT_DIR/app/build.gradle.kts"
+          fi
+
+          if [ -f app/src/main/java/cz/downtest/app/MainActivity.kt ]; then
+            mkdir -p "$PROJECT_DIR/app/src/main/java/cz/downtest/app"
+            cp app/src/main/java/cz/downtest/app/MainActivity.kt "$PROJECT_DIR/app/src/main/java/cz/downtest/app/MainActivity.kt"
           fi
 
           echo "$PROJECT_DIR" > project_path.txt
