@@ -1,1 +1,3 @@
-iOS projekt DOWN TEST.
+# DOWN TEST – iOS
+
+iPhone version of DOWN TEST.
