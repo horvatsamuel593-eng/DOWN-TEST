@@ -1,4 +1,5 @@
 
+
 name: Build DOWN TEST iOS
 
 on:
@@ -10,7 +11,7 @@ on:
 
 jobs:
   build-ios:
-    name: Build iOS Simulator
+    name: Build DOWN TEST for iPhone
     runs-on: macos-15
 
     steps:
@@ -21,9 +22,11 @@ jobs:
         run: brew install xcodegen
 
       - name: Generate Xcode project
-        run: xcodegen generate --spec ios/project.yml
+        working-directory: ios
+        run: xcodegen generate --spec project.yml
 
-      - name: Build iOS app
+      - name: Build iOS Simulator app
+        working-directory: ios
         run: |
           xcodebuild \
             -project DOWN_TEST.xcodeproj \
@@ -32,3 +35,9 @@ jobs:
             -configuration Debug \
             -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO
+
+      - name: Upload iOS Simulator app
+        uses: actions/upload-artifact@v4
+        with:
+          name: DOWN-TEST-iOS-Simulator
+          path: ios/build/Build/Products/Debug-iphonesimulator/DOWN_TEST.app
