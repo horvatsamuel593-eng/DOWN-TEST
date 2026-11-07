@@ -1,15 +1,21 @@
 
+
 <!DOCTYPE html>
 <html lang="cs">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#080808">
+
+  <title>DOWN TEST</title>
+
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" href="./icon-512.png">
+  <link rel="apple-touch-icon" href="./icon-512.png">
+
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="DOWN TEST">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <link rel="manifest" href="./manifest.json">
-  <title>DOWN TEST</title>
 
   <style>
     * {
@@ -25,18 +31,18 @@
     }
 
     header {
-      padding: 28px 15px 15px;
+      padding: 30px 15px 15px;
     }
 
     header h1 {
-      font-size: 36px;
-      margin: 0;
+      font-size: 38px;
       letter-spacing: 3px;
+      margin: 0;
+      text-shadow: 0 0 18px #8b24ff;
     }
 
     header p {
-      color: #999;
-      margin-top: 9px;
+      color: #aaa;
     }
 
     main {
@@ -46,7 +52,7 @@
 
     .panel {
       background: #151515;
-      border: 1px solid #292929;
+      border: 1px solid #333;
       border-radius: 20px;
       padding: 20px;
       margin: 18px 0;
@@ -73,8 +79,9 @@
     }
 
     .switch button.active {
-      background: white;
-      color: black;
+      background: #862cff;
+      color: white;
+      box-shadow: 0 0 15px #862cff80;
     }
 
     video {
@@ -100,17 +107,19 @@
     }
 
     #score {
-      font-size: 75px;
+      font-size: 78px;
       font-weight: bold;
       margin: 10px 0 20px;
+      text-shadow: 0 0 25px #862cff;
     }
 
     .scan-button {
       width: 100%;
-      background: white;
-      color: black;
+      background: #862cff;
+      color: white;
       font-size: 20px;
       padding: 17px;
+      box-shadow: 0 0 18px #862cff60;
     }
 
     .history {
@@ -138,26 +147,24 @@
       margin-top: 12px;
     }
 
-    .download-button {
+    .download-button,
+    .iphone-button {
       display: block;
       text-decoration: none;
-      background: white;
-      color: black;
       padding: 16px;
       border-radius: 12px;
       font-weight: bold;
       margin-top: 12px;
     }
 
+    .download-button {
+      background: #862cff;
+      color: white;
+    }
+
     .iphone-button {
-      display: block;
       background: #292929;
       color: white;
-      padding: 16px;
-      border-radius: 12px;
-      font-weight: bold;
-      margin-top: 12px;
-      text-decoration: none;
     }
 
     .note {
@@ -179,16 +186,18 @@
 
 <header>
   <h1>DOWN TEST</h1>
-  <p>Otestuj svůj náhodný score!</p>
+  <p>DOWN TEST & AURA TEST</p>
 </header>
 
 <main>
 
   <section class="panel">
+
     <div class="switch">
       <button id="downTab" class="active" onclick="setMode(false)">
         DOWN TEST
       </button>
+
       <button id="auraTab" onclick="setMode(true)">
         AURA TEST
       </button>
@@ -213,10 +222,12 @@
     <div class="history">
       <h3>HISTORIE</h3>
       <div id="historyList">Zatím žádné výsledky</div>
+
       <button class="secondary-button" onclick="clearHistory()">
         SMAZAT HISTORII
       </button>
     </div>
+
   </section>
 
   <section class="panel">
@@ -229,24 +240,25 @@
     </a>
 
     <a class="iphone-button" href="#iphone">
-      IPHONE – PŘIDAT NA PLOCHU
+      IPHONE – INSTALACE
     </a>
   </section>
 
   <section class="panel" id="iphone">
     <h2>IPHONE INSTALACE</h2>
-    <p>
-      1. Otevři tuto stránku v Safari.<br><br>
-      2. Klepni na tlačítko Sdílet.<br><br>
-      3. Vyber Přidat na plochu.<br><br>
+
+    <p style="line-height:1.9">
+      1. Otevři tuto stránku v Safari.<br>
+      2. Klepni na Sdílet.<br>
+      3. Vyber Přidat na plochu.<br>
       4. Potvrď přidání DOWN TEST.
     </p>
   </section>
 
   <p class="note">
     Výsledky jsou náhodné a slouží pouze pro zábavu.
-    DOWN TEST nijak netestuje, neurčuje ani nehodnotí
-    Downův syndrom nebo zdravotní stav.
+    Aplikace nevyhodnocuje obličej ani zdravotní stav
+    a neurčuje Downův syndrom.
   </p>
 
 </main>
@@ -257,12 +269,16 @@
 
 <script>
   let auraMode = false;
+
   let downHistory = JSON.parse(
     localStorage.getItem("downHistory") || "[]"
   );
+
   let auraHistory = JSON.parse(
     localStorage.getItem("auraHistory") || "[]"
   );
+
+  let cameraStream = null;
 
   function setMode(aura) {
     auraMode = aura;
@@ -290,12 +306,14 @@
 
     if (auraMode) {
       auraHistory.push(result);
+
       localStorage.setItem(
         "auraHistory",
         JSON.stringify(auraHistory)
       );
     } else {
       downHistory.push(result);
+
       localStorage.setItem(
         "downHistory",
         JSON.stringify(downHistory)
@@ -309,12 +327,12 @@
     const history = auraMode ? auraHistory : downHistory;
     const list = document.getElementById("historyList");
 
+    list.replaceChildren();
+
     if (history.length === 0) {
       list.textContent = "Zatím žádné výsledky";
       return;
     }
-
-    list.replaceChildren();
 
     history.slice().reverse().forEach((value, index) => {
       const item = document.createElement("div");
@@ -348,18 +366,23 @@
 
     if (!navigator.mediaDevices ||
         !navigator.mediaDevices.getUserMedia) {
-      alert("Kamera není dostupná. Otevři web přes HTTPS v podporovaném prohlížeči.");
+      alert("Kamera není v tomto prohlížeči dostupná.");
       return;
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+      }
+
+      cameraStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user" },
         audio: false
       });
 
-      video.srcObject = stream;
+      video.srcObject = cameraStream;
       await video.play();
+
     } catch (error) {
       alert("Kameru se nepodařilo zapnout. Zkontroluj oprávnění.");
     }
@@ -368,7 +391,7 @@
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("./service-worker.js")
-        .catch(error => console.log("Service Worker:", error));
+        .catch(error => console.log(error));
     });
   }
 
@@ -377,4 +400,3 @@
 
 </body>
 </html>
-i
