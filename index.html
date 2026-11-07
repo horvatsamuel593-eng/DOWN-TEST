@@ -1,57 +1,380 @@
+
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="DOWN TEST – Android a iPhone aplikace. DOWN TEST a AURA TEST na jednom místě.">
-<title>DOWN TEST – Oficiální web</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#090912;color:white;font-family:Arial,sans-serif;text-align:center}
-header{padding:65px 20px 35px}
-h1{font-size:clamp(45px,10vw,75px);margin:0;letter-spacing:3px}
-.purple{color:#a78bfa}
-header p{color:#bbb;font-size:18px}
-main{max-width:850px;margin:auto;padding:20px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin:35px 0}
-.card{background:#181827;border:1px solid #39394d;border-radius:20px;padding:30px 20px}
-.card h2{color:#c4b5fd}
-.icon{font-size:55px}
-.button{display:block;background:#8b5cf6;color:white;text-decoration:none;padding:16px;border-radius:12px;font-weight:bold;margin-top:22px}
-.button:hover{background:#7c3aed}
-.coming{background:#343446;color:#ddd}
-.note{color:#aaa;font-size:13px;line-height:1.6;margin-top:35px}
-footer{padding:30px;color:#777}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080808">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="DOWN TEST">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <link rel="manifest" href="./manifest.json">
+  <title>DOWN TEST</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #080808;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    header {
+      padding: 28px 15px 15px;
+    }
+
+    header h1 {
+      font-size: 36px;
+      margin: 0;
+      letter-spacing: 3px;
+    }
+
+    header p {
+      color: #999;
+      margin-top: 9px;
+    }
+
+    main {
+      width: min(92%, 500px);
+      margin: auto;
+    }
+
+    .panel {
+      background: #151515;
+      border: 1px solid #292929;
+      border-radius: 20px;
+      padding: 20px;
+      margin: 18px 0;
+    }
+
+    .switch {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .switch button {
+      flex: 1;
+      background: #292929;
+      color: white;
+    }
+
+    .switch button.active {
+      background: white;
+      color: black;
+    }
+
+    video {
+      width: 100%;
+      height: 260px;
+      background: #050505;
+      object-fit: cover;
+      border-radius: 15px;
+      margin-top: 18px;
+    }
+
+    .camera-button {
+      width: 100%;
+      background: #292929;
+      color: white;
+      margin-top: 10px;
+    }
+
+    .score-label {
+      color: #aaa;
+      margin-top: 25px;
+      font-weight: bold;
+    }
+
+    #score {
+      font-size: 75px;
+      font-weight: bold;
+      margin: 10px 0 20px;
+    }
+
+    .scan-button {
+      width: 100%;
+      background: white;
+      color: black;
+      font-size: 20px;
+      padding: 17px;
+    }
+
+    .history {
+      text-align: left;
+      margin-top: 20px;
+    }
+
+    .history h3 {
+      text-align: center;
+    }
+
+    .history-item {
+      background: #252525;
+      border-radius: 10px;
+      padding: 12px;
+      margin: 8px 0;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .secondary-button {
+      width: 100%;
+      background: #292929;
+      color: white;
+      margin-top: 12px;
+    }
+
+    .download-button {
+      display: block;
+      text-decoration: none;
+      background: white;
+      color: black;
+      padding: 16px;
+      border-radius: 12px;
+      font-weight: bold;
+      margin-top: 12px;
+    }
+
+    .iphone-button {
+      display: block;
+      background: #292929;
+      color: white;
+      padding: 16px;
+      border-radius: 12px;
+      font-weight: bold;
+      margin-top: 12px;
+      text-decoration: none;
+    }
+
+    .note {
+      color: #888;
+      font-size: 12px;
+      line-height: 1.6;
+      margin: 20px 5px;
+    }
+
+    footer {
+      color: #666;
+      padding: 25px 10px;
+      font-size: 12px;
+    }
+  </style>
 </head>
+
 <body>
+
 <header>
-<h1>DOWN <span class="purple">TEST</span></h1>
-<p>Oficiální stránky aplikace 💀</p>
+  <h1>DOWN TEST</h1>
+  <p>Otestuj svůj náhodný score!</p>
 </header>
+
 <main>
-<h2>Vyber si svou platformu</h2>
-<div class="cards">
-<section class="card">
-<div class="icon">🤖</div>
-<h2>ANDROID</h2>
-<p>DOWN TEST + AURA TEST</p>
-<p>Stáhni si Android verzi aplikace.</p>
-<a class="button" href="https://github.com/horvatsamuel593-eng/DOWN-TEST/releases">STÁHNOUT APK</a>
-</section>
-<section class="card">
-<div class="icon">🍎</div>
-<h2>IPHONE</h2>
-<p>DOWN TEST + AURA TEST</p>
-<p>iPhone verze se připravuje.</p>
-<span class="button coming">JIŽ BRZY</span>
-</section>
-</div>
-<h2>Dva režimy. Jedna aplikace.</h2>
-<p>💀 DOWN TEST – náhodné skóre 0–100.</p>
-<p>✨ AURA TEST – náhodné skóre 0–1000.</p>
-<p class="note">Výsledky jsou náhodné a slouží pouze pro zábavu. Aplikace není zdravotnickým ani diagnostickým nástrojem a nesouvisí s diagnózou Downova syndromu.</p>
+
+  <section class="panel">
+    <div class="switch">
+      <button id="downTab" class="active" onclick="setMode(false)">
+        DOWN TEST
+      </button>
+      <button id="auraTab" onclick="setMode(true)">
+        AURA TEST
+      </button>
+    </div>
+
+    <video id="camera" autoplay muted playsinline></video>
+
+    <button class="camera-button" onclick="startCamera()">
+      ZAPNOUT PŘEDNÍ KAMERU
+    </button>
+
+    <div class="score-label" id="scoreLabel">
+      DOWN TEST SCORE
+    </div>
+
+    <div id="score">0</div>
+
+    <button class="scan-button" onclick="scan()">
+      SKENOVAT
+    </button>
+
+    <div class="history">
+      <h3>HISTORIE</h3>
+      <div id="historyList">Zatím žádné výsledky</div>
+      <button class="secondary-button" onclick="clearHistory()">
+        SMAZAT HISTORII
+      </button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>STÁHNOUT DOWN TEST</h2>
+    <p style="color:#aaa">Vyber své zařízení.</p>
+
+    <a class="download-button"
+       href="https://github.com/horvatsamuel593-eng/DOWN-TEST/releases">
+       STÁHNOUT ANDROID APK
+    </a>
+
+    <a class="iphone-button" href="#iphone">
+      IPHONE – PŘIDAT NA PLOCHU
+    </a>
+  </section>
+
+  <section class="panel" id="iphone">
+    <h2>IPHONE INSTALACE</h2>
+    <p>
+      1. Otevři tuto stránku v Safari.<br><br>
+      2. Klepni na tlačítko Sdílet.<br><br>
+      3. Vyber Přidat na plochu.<br><br>
+      4. Potvrď přidání DOWN TEST.
+    </p>
+  </section>
+
+  <p class="note">
+    Výsledky jsou náhodné a slouží pouze pro zábavu.
+    DOWN TEST nijak netestuje, neurčuje ani nehodnotí
+    Downův syndrom nebo zdravotní stav.
+  </p>
+
 </main>
-<footer>DOWN TEST © 2026</footer>
+
+<footer>
+  DOWN TEST © 2026
+</footer>
+
+<script>
+  let auraMode = false;
+  let downHistory = JSON.parse(
+    localStorage.getItem("downHistory") || "[]"
+  );
+  let auraHistory = JSON.parse(
+    localStorage.getItem("auraHistory") || "[]"
+  );
+
+  function setMode(aura) {
+    auraMode = aura;
+
+    document.getElementById("downTab")
+      .classList.toggle("active", !aura);
+
+    document.getElementById("auraTab")
+      .classList.toggle("active", aura);
+
+    document.getElementById("scoreLabel").textContent =
+      aura ? "AURA TEST SCORE" : "DOWN TEST SCORE";
+
+    document.getElementById("score").textContent = "0";
+
+    showHistory();
+  }
+
+  function scan() {
+    const result = Math.floor(
+      Math.random() * (auraMode ? 1001 : 101)
+    );
+
+    document.getElementById("score").textContent = result;
+
+    if (auraMode) {
+      auraHistory.push(result);
+      localStorage.setItem(
+        "auraHistory",
+        JSON.stringify(auraHistory)
+      );
+    } else {
+      downHistory.push(result);
+      localStorage.setItem(
+        "downHistory",
+        JSON.stringify(downHistory)
+      );
+    }
+
+    showHistory();
+  }
+
+  function showHistory() {
+    const history = auraMode ? auraHistory : downHistory;
+    const list = document.getElementById("historyList");
+
+    if (history.length === 0) {
+      list.textContent = "Zatím žádné výsledky";
+      return;
+    }
+
+    list.replaceChildren();
+
+    history.slice().reverse().forEach((value, index) => {
+      const item = document.createElement("div");
+      item.className = "history-item";
+
+      const label = document.createElement("span");
+      label.textContent = "Test " + (history.length - index);
+
+      const score = document.createElement("strong");
+      score.textContent = value;
+
+      item.append(label, score);
+      list.appendChild(item);
+    });
+  }
+
+  function clearHistory() {
+    if (auraMode) {
+      auraHistory = [];
+      localStorage.removeItem("auraHistory");
+    } else {
+      downHistory = [];
+      localStorage.removeItem("downHistory");
+    }
+
+    showHistory();
+  }
+
+  async function startCamera() {
+    const video = document.getElementById("camera");
+
+    if (!navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia) {
+      alert("Kamera není dostupná. Otevři web přes HTTPS v podporovaném prohlížeči.");
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
+        audio: false
+      });
+
+      video.srcObject = stream;
+      await video.play();
+    } catch (error) {
+      alert("Kameru se nepodařilo zapnout. Zkontroluj oprávnění.");
+    }
+  }
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./service-worker.js")
+        .catch(error => console.log("Service Worker:", error));
+    });
+  }
+
+  showHistory();
+</script>
+
 </body>
 </html>
+i
