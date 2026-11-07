@@ -1,0 +1,24 @@
+
+name: DOWN_TEST
+
+options:
+  bundleIdPrefix: cz.downtest
+  deploymentTarget:
+    iOS: "16.0"
+
+targets:
+  DOWN_TEST:
+    type: application
+    platform: iOS
+    sources:
+      - DownTest
+    info:
+      path: DownTest/Info.plist
+      properties:
+        CFBundleDisplayName: DOWN TEST
+        NSCameraUsageDescription: Kamera slouží k zobrazení náhledu při testování.
+        UILaunchScreen: {}
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: cz.downtest.app
+        SWIFT_VERSION: "5.0"
