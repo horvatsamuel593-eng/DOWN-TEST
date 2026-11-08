@@ -1,5 +1,6 @@
 
 
+
 name: Build DOWN TEST APK
 
 on:
@@ -9,6 +10,7 @@ on:
       - '**.zip'
       - 'app/build.gradle.kts'
       - 'app/src/main/java/cz/downtest/app/MainActivity.kt'
+      - 'icon-512.png'
       - '.github/workflows/android.yml'
 
 jobs:
@@ -63,6 +65,82 @@ jobs:
           fi
 
           echo "$PROJECT_DIR" > project_path.txt
+
+      - name: Create DOWN TEST Android icons
+        run: |
+          test -f icon-512.png
+          python -m pip install Pillow
+
+          PROJECT_DIR=$(cat project_path.txt)
+          RES="$PROJECT_DIR/app/src/main/res"
+
+          mkdir -p "$RES"
+
+          python - <<'PY'
+          from PIL import Image
+          import os
+
+          image = Image.open("icon-512.png").convert("RGBA")
+
+          sizes = {
+              "mdpi": 48,
+              "hdpi": 72,
+              "xhdpi": 96,
+              "xxhdpi": 144,
+              "xxxhdpi": 192
+          }
+
+          project_dir = open("project_path.txt").read().strip()
+          res = os.path.join(project_dir, "app", "src", "main", "res")
+
+          for density, size in sizes.items():
+              folder = os.path.join(res, "mipmap-" + density)
+              os.makedirs(folder, exist_ok=True)
+
+              icon = image.resize((size, size), Image.Resampling.LANCZOS)
+              icon.save(os.path.join(folder, "ic_launcher.png"))
+              icon.save(os.path.join(folder, "ic_launcher_round.png"))
+
+          print("DOWN TEST icons created successfully.")
+          PY
+
+          python - <<'PY'
+          import re
+          import os
+
+          project_dir = open("project_path.txt").read().strip()
+          manifest = os.path.join(
+              project_dir, "app", "src", "main", "AndroidManifest.xml"
+          )
+
+          if not os.path.isfile(manifest):
+              raise SystemExit("AndroidManifest.xml not found!")
+
+          with open(manifest, encoding="utf-8") as f:
+              content = f.read()
+
+          match = re.search(r"<application\b[^>]*>", content, re.S)
+          if not match:
+              raise SystemExit("Application tag not found!")
+
+          tag = match.group(0)
+
+          for attribute in ("icon", "roundIcon"):
+              pattern = r'\s+android:' + attribute + r'="[^"]*"'
+              replacement = ' android:' + attribute + '="@mipmap/ic_launcher"'
+
+              if re.search(pattern, tag):
+                  tag = re.sub(pattern, replacement, tag)
+              else:
+                  tag = tag[:-1] + replacement + ">"
+
+          content = content[:match.start()] + tag + content[match.end():]
+
+          with open(manifest, "w", encoding="utf-8") as f:
+              f.write(content)
+
+          print("DOWN TEST launcher icon configured.")
+          PY
 
       - name: Build APK
         run: |
