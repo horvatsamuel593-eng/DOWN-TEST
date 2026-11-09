@@ -6,21 +6,20 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.Gravity
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import androidx.activity.result.contract.ActivityResultContracts
 import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
@@ -31,9 +30,9 @@ class MainActivity : AppCompatActivity() {
     private val gold = Color.rgb(245, 190, 70)
     private val red = Color.rgb(235, 85, 110)
     private val white = Color.WHITE
-    private val muted = 0xFFB8BBCA.toInt()
+    private val muted = Color.rgb(184, 187, 202)
 
-    private data class GameMode(
+    data class GameMode(
         val name: String,
         val emoji: String,
         val description: String,
@@ -43,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         val color: Int
     )
 
-    private data class DownQuestion(
+    data class Question(
         val title: String,
         val answers: List<Pair<String, Int>>
     )
@@ -59,17 +58,17 @@ class MainActivity : AppCompatActivity() {
         GameMode("SIGMA TEST", "🐺", "Tvůj náhodný Sigma level", true, 1000, false, gold)
     )
 
-    private val downQuestions = listOf(
-        DownQuestion(
+    private val questions = listOf(
+        Question(
             "1. Jak moc posloucháš song Jana Kollera?",
             listOf(
-                "Vždycky" to 20,
-                "Občas" to 15,
-                "Každý týden" to 10,
+                "Vždycky" to 5,
+                "Občas" to 5,
+                "Každý týden" to 5,
                 "Vůbec ho neposlouchám" to 5
             )
         ),
-        DownQuestion(
+        Question(
             "2. Na jaké YouTubery se koukáš nebo koukal?",
             listOf(
                 "Fizi" to 20,
@@ -78,7 +77,7 @@ class MainActivity : AppCompatActivity() {
                 "Dodo" to 5
             )
         ),
-        DownQuestion(
+        Question(
             "3. Víš, co znamená, když ti někdo řekne, že jsi down?",
             listOf(
                 "Vím na 100 %" to 10,
@@ -87,26 +86,17 @@ class MainActivity : AppCompatActivity() {
                 "Vůbec nevím" to 0
             )
         ),
-        DownQuestion(
+        Question(
             "4. Jak často říkáš 67?",
             listOf(
-                "Hodně často" to 20,
-                "Občas" to 15,
-                "Řekl jsem to jenom párkrát" to 10,
+                "Hodně často" to 5,
+                "Občas" to 5,
+                "Řekl jsem to jenom párkrát" to 5,
                 "Nikdy jsem to neřekl" to 0
             )
         ),
-        DownQuestion(
-            "5. Jak moc jsi posedlý číslem 67?",
-            listOf(
-                "Extrémně" to 40,
-                "Docela dost" to 25,
-                "Trochu" to 10,
-                "Vůbec" to 0
-            )
-        ),
-        DownQuestion(
-            "6. Kolik si myslíš, že ti vyjde výsledek DOWN TESTU?",
+        Question(
+            "5. Kolik si myslíš, že ti vyjde výsledek DOWN TESTU?",
             listOf(
                 "Míň než 50" to 20,
                 "Víc než 50" to 10
@@ -116,7 +106,6 @@ class MainActivity : AppCompatActivity() {
 
     private val histories = mutableMapOf<Int, MutableList<Int>>()
     private var selectedMode = 0
-    private var scanning = false
 
     private lateinit var previewView: PreviewView
     private lateinit var status: TextView
@@ -128,22 +117,51 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
-            if (::previewView.isInitialized) startCamera()
+            startCamera()
         } else {
             if (::status.isInitialized) {
                 status.text = "Kamera nebyla povolena."
             }
-            Toast.makeText(
-                this,
-                "Bez povolení kamery nelze zobrazit náhled.",
-                Toast.LENGTH_LONG
-            ).show()
+            Toast.makeText(this, "Pro náhled je potřeba povolit kameru.", Toast.LENGTH_LONG).show()
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         showMenu()
+    }
+
+    private fun dp(value: Int): Int {
+        return (value * resources.displayMetrics.density).toInt()
+    }
+
+    private fun match(): LinearLayout.LayoutParams {
+        return LinearLayout.LayoutParams(-1, -2)
+    }
+
+    private fun text(
+        value: String,
+        size: Float,
+        color: Int,
+        bold: Boolean = false
+    ): TextView {
+        return TextView(this).apply {
+            text = value
+            textSize = size
+            setTextColor(color)
+            if (bold) setTypeface(null, android.graphics.Typeface.BOLD)
+        }
+    }
+
+    private fun button(value: String): Button {
+        return Button(this).apply {
+            text = value
+            textSize = 15f
+            setTextColor(white)
+            backgroundTintList =
+                android.content.res.ColorStateList.valueOf(purple)
+            isAllCaps = false
+        }
     }
 
     private fun newRoot(): LinearLayout {
@@ -156,8 +174,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showMenu() {
-        scanning = false
-
         val scroll = ScrollView(this).apply {
             setBackgroundColor(bg)
         }
@@ -193,24 +209,20 @@ class MainActivity : AppCompatActivity() {
             if (mode.premium) addModeCard(root, index, mode)
         }
 
-        val premiumButton = button("🔓 OTEVŘÍT VŠECHNY MÓDY – 20 Kč")
+        val premium = button("🔓 OTEVŘÍT VŠECHNY MÓDY – 20 Kč")
         root.addView(
-            premiumButton,
+            premium,
             LinearLayout.LayoutParams(-1, -2).apply {
                 topMargin = dp(18)
             }
         )
 
-        premiumButton.setOnClickListener {
+        premium.setOnClickListener {
             showPremiumDialog()
         }
 
         root.addView(
-            text(
-                "Všechny výsledky jsou pouze pro zábavu.",
-                12f,
-                muted
-            ).apply {
+            text("Všechny výsledky jsou pouze pro zábavu.", 12f, muted).apply {
                 gravity = Gravity.CENTER
                 setPadding(0, dp(18), 0, 0)
             },
@@ -227,11 +239,7 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun addModeCard(
-        root: LinearLayout,
-        index: Int,
-        mode: GameMode
-    ) {
+    private fun addModeCard(root: LinearLayout, index: Int, mode: GameMode) {
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -281,24 +289,21 @@ class MainActivity : AppCompatActivity() {
             if (mode.premium) {
                 showPremiumDialog()
             } else {
-                openMode(index)
+                selectedMode = index
+                if (index == 0) showDownChoice() else showModeScreen()
             }
         }
     }
 
-    private fun openMode(index: Int) {
-        selectedMode = index
-
-        if (index == 0) {
-            showDownChoice()
-        } else {
-            showModeScreen()
-        }
+    private fun showPremiumDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("🔒 Prémiové režimy")
+            .setMessage("Tento režim zatím není dostupný. Prémiové odemykání ještě není nastavené.")
+            .setPositiveButton("OK", null)
+            .show()
     }
 
     private fun showDownChoice() {
-        scanning = false
-
         val root = newRoot()
         setContentView(root)
 
@@ -324,14 +329,14 @@ class MainActivity : AppCompatActivity() {
             showModeScreen()
         }
 
-        val questions = button("📝 OTÁZKY")
+        val quiz = button("📝 OTÁZKY")
         root.addView(
-            questions,
+            quiz,
             LinearLayout.LayoutParams(-1, dp(65)).apply {
                 topMargin = dp(15)
             }
         )
-        questions.setOnClickListener {
+        quiz.setOnClickListener {
             showDownQuestions()
         }
 
@@ -357,12 +362,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(scroll)
 
         val selected = mutableMapOf<Int, Int>()
-        val answerButtons = mutableListOf<Pair<Int, Int, Button>>()
-
-        val calculateButton = button("VYHODNOTIT TEST")
-        calculateButton.isEnabled = false
-        calculateButton.backgroundTintList =
-            android.content.res.ColorStateList.valueOf(muted)
+        val answerButtons = mutableListOf<Triple<Int, Int, Button>>()
 
         root.addView(
             text("💀 DOWN TEST – OTÁZKY", 25f, white, true).apply {
@@ -373,19 +373,14 @@ class MainActivity : AppCompatActivity() {
         )
 
         root.addView(
-            text(
-                "Vyber jednu odpověď u každé otázky.",
-                14f,
-                muted
-            ).apply {
+            text("Vyber jednu odpověď u každé otázky.", 14f, muted).apply {
                 gravity = Gravity.CENTER
                 setPadding(0, 0, 0, dp(20))
             },
             match()
         )
 
-        downQuestions.forEachIndexed { questionIndex, question ->
-
+        questions.forEachIndexed { questionIndex, question ->
             root.addView(
                 text(question.title, 17f, white, true).apply {
                     setPadding(0, dp(14), 0, dp(8))
@@ -394,7 +389,6 @@ class MainActivity : AppCompatActivity() {
             )
 
             question.answers.forEachIndexed { answerIndex, answer ->
-
                 val answerButton = button(answer.first)
                 answerButton.backgroundTintList =
                     android.content.res.ColorStateList.valueOf(panel)
@@ -422,30 +416,36 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
 
-                    calculateButton.isEnabled =
-                        selected.size == downQuestions.size
-
-                    calculateButton.backgroundTintList =
+                    val calculate = root.findViewWithTag<Button>("calculate")
+                    calculate?.isEnabled = selected.size == questions.size
+                    calculate?.backgroundTintList =
                         android.content.res.ColorStateList.valueOf(
-                            if (calculateButton.isEnabled) purple else muted
+                            if (selected.size == questions.size) purple else muted
                         )
                 }
             }
         }
 
+        val calculate = button("VYHODNOTIT TEST").apply {
+            tag = "calculate"
+            isEnabled = false
+            backgroundTintList =
+                android.content.res.ColorStateList.valueOf(muted)
+        }
+
         root.addView(
-            calculateButton,
+            calculate,
             LinearLayout.LayoutParams(-1, dp(60)).apply {
                 topMargin = dp(22)
             }
         )
 
-        calculateButton.setOnClickListener {
-            if (selected.size != downQuestions.size) return@setOnClickListener
+        calculate.setOnClickListener {
+            if (selected.size != questions.size) return@setOnClickListener
 
-            val total = downQuestions.indices.sumOf { index ->
+            val total = questions.indices.sumOf { index ->
                 val answerIndex = selected[index]!!
-                downQuestions[index].answers[answerIndex].second
+                questions[index].answers[answerIndex].second
             }
 
             showDownResult(total)
@@ -458,7 +458,6 @@ class MainActivity : AppCompatActivity() {
                 topMargin = dp(12)
             }
         )
-
         back.setOnClickListener {
             showDownChoice()
         }
@@ -467,10 +466,7 @@ class MainActivity : AppCompatActivity() {
     private fun showDownResult(total: Int) {
         val scores = histories.getOrPut(0) { mutableListOf() }
         scores.add(0, total)
-
-        if (scores.size > 8) {
-            scores.removeAt(scores.lastIndex)
-        }
+        if (scores.size > 8) scores.removeAt(scores.lastIndex)
 
         val root = newRoot()
         setContentView(root)
@@ -487,7 +483,6 @@ class MainActivity : AppCompatActivity() {
             root.addView(
                 text("💥 ERROR 💥", 34f, red, true).apply {
                     gravity = Gravity.CENTER
-                    setPadding(0, dp(20), 0, dp(15))
                 },
                 match()
             )
@@ -500,14 +495,6 @@ class MainActivity : AppCompatActivity() {
                     true
                 ).apply {
                     gravity = Gravity.CENTER
-                },
-                match()
-            )
-
-            root.addView(
-                text("Výsledek: $total %", 18f, white, true).apply {
-                    gravity = Gravity.CENTER
-                    setPadding(0, dp(18), 0, 0)
                 },
                 match()
             )
@@ -537,18 +524,7 @@ class MainActivity : AppCompatActivity() {
         )
 
         share.setOnClickListener {
-            val message = if (total > 100) {
-                "Rozbil jsem DOWN TEST! Moje skóre: $total % 💀"
-            } else {
-                "Můj DOWN TEST výsledek: $total % 💀"
-            }
-
-            val send = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, message)
-            }
-
-            startActivity(Intent.createChooser(send, "Sdílet výsledek"))
+            shareText("Můj DOWN TEST výsledek: $total % 💀")
         }
 
         val again = button("ZKUSIT ZNOVU")
@@ -575,7 +551,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showModeScreen() {
-        scanning = false
         val mode = modes[selectedMode]
 
         val scroll = ScrollView(this).apply {
@@ -586,18 +561,11 @@ class MainActivity : AppCompatActivity() {
         scroll.addView(root)
         setContentView(scroll)
 
-        val back = button("‹ ZPĚT DO NABÍDKY")
+        val back = button("‹ ZPĚT")
         root.addView(back, match())
-
         back.setOnClickListener {
-            if (!scanning) {
-                stopCamera()
-                if (selectedMode == 0) {
-                    showDownChoice()
-                } else {
-                    showMenu()
-                }
-            }
+            stopCamera()
+            if (selectedMode == 0) showDownChoice() else showMenu()
         }
 
         root.addView(
@@ -642,7 +610,6 @@ class MainActivity : AppCompatActivity() {
             gravity = Gravity.CENTER
             setPadding(0, dp(12), 0, dp(8))
         }
-
         cameraCard.addView(status, match())
 
         scanButton = button("SPUSTIT SCAN")
@@ -653,24 +620,14 @@ class MainActivity : AppCompatActivity() {
             runScan()
         }
 
-        result = text(
-            "${mode.name}: --",
-            29f,
-            mode.color,
-            true
-        ).apply {
+        result = text("${mode.name}: --", 29f, mode.color, true).apply {
             gravity = Gravity.CENTER
             setPadding(0, dp(24), 0, dp(8))
         }
-
         root.addView(result, match())
 
         root.addView(
-            text(
-                "Výsledek je náhodný a slouží pouze pro zábavu.",
-                13f,
-                muted
-            ).apply {
+            text("Výsledek je náhodný a slouží pouze pro zábavu.", 13f, muted).apply {
                 gravity = Gravity.CENTER
             },
             match()
@@ -683,17 +640,8 @@ class MainActivity : AppCompatActivity() {
                 topMargin = dp(14)
             }
         )
-
         share.setOnClickListener {
-            val send = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(
-                    Intent.EXTRA_TEXT,
-                    "Můj výsledek v ${mode.name}: ${result.text}. A jaký máš ty?"
-                )
-            }
-
-            startActivity(Intent.createChooser(send, "Sdílet výsledek"))
+            shareText("Můj výsledek v ${mode.name}: ${result.text}")
         }
 
         root.addView(
@@ -704,4 +652,34 @@ class MainActivity : AppCompatActivity() {
         )
 
         history = text("Zatím žádné výsledky.", 14f, muted)
-   
+        root.addView(history, match())
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            startCamera()
+        } else {
+            cameraPermission.launch(Manifest.permission.CAMERA)
+        }
+
+        updateHistory()
+    }
+
+    private fun startCamera() {
+        if (!::previewView.isInitialized) return
+
+        val future = ProcessCameraProvider.getInstance(this)
+
+        future.addListener({
+            try {
+                val provider = future.get()
+                val preview = Preview.Builder().build()
+                preview.setSurfaceProvider(previewView.surfaceProvider)
+
+                provider.unbindAll()
+                provider.bindToLifecycle(
+                    this,
+               
+    
