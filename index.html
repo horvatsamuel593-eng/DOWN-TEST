@@ -60,7 +60,8 @@
 
     .switch {
       display: flex;
-      gap: 10px;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     button {
@@ -68,12 +69,13 @@
       border: 0;
       border-radius: 12px;
       padding: 14px;
-      font-size: 16px;
+      font-size: 14px;
       font-weight: bold;
     }
 
     .switch button {
-      flex: 1;
+      flex: 1 1 30%;
+      min-width: 0;
       background: #292929;
       color: white;
     }
@@ -186,7 +188,7 @@
 
 <header>
   <h1>DOWN TEST</h1>
-  <p>DOWN TEST & AURA TEST</p>
+  <p>DOWN TEST • AURA TEST • GOONER TEST</p>
 </header>
 
 <main>
@@ -194,12 +196,16 @@
   <section class="panel">
 
     <div class="switch">
-      <button id="downTab" class="active" onclick="setMode(false)">
+      <button id="downTab" class="active" onclick="setMode('down')">
         DOWN TEST
       </button>
 
-      <button id="auraTab" onclick="setMode(true)">
+      <button id="auraTab" onclick="setMode('aura')">
         AURA TEST
+      </button>
+
+      <button id="goonerTab" onclick="setMode('gooner')">
+        GOONER TEST
       </button>
     </div>
 
@@ -257,8 +263,8 @@
 
   <p class="note">
     Výsledky jsou náhodné a slouží pouze pro zábavu.
-    Aplikace nevyhodnocuje obličej ani zdravotní stav
-    a neurčuje Downův syndrom.
+    Kamera se používá pouze pro živý náhled.
+    Aplikace nevyhodnocuje obličej ani zdravotní stav.
   </p>
 
 </main>
@@ -268,7 +274,7 @@
 </footer>
 
 <script>
-  let auraMode = false;
+  let currentMode = "down";
 
   let downHistory = JSON.parse(
     localStorage.getItem("downHistory") || "[]"
@@ -278,53 +284,77 @@
     localStorage.getItem("auraHistory") || "[]"
   );
 
+  let goonerHistory = JSON.parse(
+    localStorage.getItem("goonerHistory") || "[]"
+  );
+
   let cameraStream = null;
 
-  function setMode(aura) {
-    auraMode = aura;
+  function setMode(mode) {
+    currentMode = mode;
 
     document.getElementById("downTab")
-      .classList.toggle("active", !aura);
+      .classList.toggle("active", mode === "down");
 
     document.getElementById("auraTab")
-      .classList.toggle("active", aura);
+      .classList.toggle("active", mode === "aura");
+
+    document.getElementById("goonerTab")
+      .classList.toggle("active", mode === "gooner");
+
+    const labels = {
+      down: "DOWN TEST SCORE",
+      aura: "AURA TEST SCORE",
+      gooner: "GOONER TEST SCORE"
+    };
 
     document.getElementById("scoreLabel").textContent =
-      aura ? "AURA TEST SCORE" : "DOWN TEST SCORE";
+      labels[mode];
 
-    document.getElementById("score").textContent = "0";
+    document.getElementById("score").textContent =
+      mode === "gooner" ? "0%" : "0";
 
     showHistory();
   }
 
   function scan() {
-    const result = Math.floor(
-      Math.random() * (auraMode ? 1001 : 101)
-    );
+    let result;
 
-    document.getElementById("score").textContent = result;
-
-    if (auraMode) {
-      auraHistory.push(result);
-
-      localStorage.setItem(
-        "auraHistory",
-        JSON.stringify(auraHistory)
-      );
+    if (currentMode === "aura") {
+      result = Math.floor(Math.random() * 1001);
     } else {
-      downHistory.push(result);
-
-      localStorage.setItem(
-        "downHistory",
-        JSON.stringify(downHistory)
-      );
+      result = Math.floor(Math.random() * 101);
     }
+
+    const history = getCurrentHistory();
+    history.push(result);
+
+    saveCurrentHistory();
+
+    document.getElementById("score").textContent =
+      currentMode === "gooner" ? result + "%" : result;
 
     showHistory();
   }
 
+  function getCurrentHistory() {
+    if (currentMode === "aura") return auraHistory;
+    if (currentMode === "gooner") return goonerHistory;
+    return downHistory;
+  }
+
+  function saveCurrentHistory() {
+    if (currentMode === "aura") {
+      localStorage.setItem("auraHistory", JSON.stringify(auraHistory));
+    } else if (currentMode === "gooner") {
+      localStorage.setItem("goonerHistory", JSON.stringify(goonerHistory));
+    } else {
+      localStorage.setItem("downHistory", JSON.stringify(downHistory));
+    }
+  }
+
   function showHistory() {
-    const history = auraMode ? auraHistory : downHistory;
+    const history = getCurrentHistory();
     const list = document.getElementById("historyList");
 
     list.replaceChildren();
@@ -342,7 +372,8 @@
       label.textContent = "Test " + (history.length - index);
 
       const score = document.createElement("strong");
-      score.textContent = value;
+      score.textContent =
+        currentMode === "gooner" ? value + "%" : value;
 
       item.append(label, score);
       list.appendChild(item);
@@ -350,13 +381,19 @@
   }
 
   function clearHistory() {
-    if (auraMode) {
+    if (currentMode === "aura") {
       auraHistory = [];
       localStorage.removeItem("auraHistory");
+    } else if (currentMode === "gooner") {
+      goonerHistory = [];
+      localStorage.removeItem("goonerHistory");
     } else {
       downHistory = [];
       localStorage.removeItem("downHistory");
     }
+
+    document.getElementById("score").textContent =
+      currentMode === "gooner" ? "0%" : "0";
 
     showHistory();
   }
