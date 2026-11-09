@@ -711,5 +711,103 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 provider.unbindAll()
-                provider.bindToLifecycle(
-             
+                                    this@MainActivity,
+                    CameraSelector.DEFAULT_FRONT_CAMERA,
+                    preview
+                )
+
+                status.text = "Kamera je připravena!"
+                scanButton.isEnabled = true
+
+            } catch (e: Exception) {
+                status.text = "Kameru se nepodařilo spustit."
+                Toast.makeText(
+                    this,
+                    "Chyba kamery: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }, ContextCompat.getMainExecutor(this))
+    }
+
+    private fun stopCamera() {
+        try {
+            cameraProvider?.unbindAll()
+            cameraProvider = null
+        } catch (_: Exception) {
+        }
+    }
+
+    private fun runScan() {
+        val mode = modes[selectedMode]
+
+        scanButton.isEnabled = false
+        status.text = "Vyhodnocuji..."
+
+        val score = Random.nextInt(0, 101)
+
+        result.text = if (mode.percent) {
+            "${mode.name}: $score %"
+        } else {
+            "${mode.name}: $score"
+        }
+
+        val historyList = histories.getOrPut(selectedMode) {
+            mutableListOf()
+        }
+
+        historyList.add(
+            0,
+            if (mode.percent) "$score %" else "$score"
+        )
+
+        if (historyList.size > 8) {
+            historyList.removeAt(historyList.lastIndex)
+        }
+
+        updateHistory()
+        status.text = "Scan dokončen!"
+        scanButton.isEnabled = true
+    }
+
+    private fun updateHistory() {
+        if (!::history.isInitialized) return
+
+        val entries = histories[selectedMode]
+
+        history.text = if (entries.isNullOrEmpty()) {
+            "Zatím žádné výsledky."
+        } else {
+            entries.mapIndexed { index, value ->
+                "${index + 1}. $value"
+            }.joinToString("\n")
+        }
+    }
+
+    private fun shareText(message: String) {
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, message)
+        }
+
+        startActivity(
+            Intent.createChooser(intent, "Sdílet výsledek")
+        )
+    }
+
+    private fun showPremiumDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("🔒 PREMIUM")
+            .setMessage(
+                "Tento režim je zatím zamčený.\n\n" +
+                "Premium režimy budou dostupné v budoucí verzi aplikace."
+            )
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    override fun onDestroy() {
+        stopCamera()
+        super.onDestroy()
+    }
+}
