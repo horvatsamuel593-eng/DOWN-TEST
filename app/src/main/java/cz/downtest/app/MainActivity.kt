@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     private val panel = Color.rgb(36, 39, 56)
     private val purple = Color.rgb(139, 92, 246)
     private val gold = Color.rgb(245, 190, 70)
+    private val red = Color.rgb(235, 85, 110)
 
     private lateinit var previewView: PreviewView
     private lateinit var status: TextView
@@ -37,8 +38,10 @@ class MainActivity : AppCompatActivity() {
 
     private val downScores = mutableListOf<Int>()
     private val auraScores = mutableListOf<Int>()
+    private val goonerScores = mutableListOf<Int>()
 
-    private var auraMode = false
+    // 0 = DOWN, 1 = AURA, 2 = GOONER
+    private var currentMode = 0
     private var scanning = false
 
     private val cameraPermission = registerForActivityResult(
@@ -139,7 +142,11 @@ class MainActivity : AppCompatActivity() {
         })
 
         share.setOnClickListener {
-            val modeName = if (auraMode) "AURA TEST" else "DOWN TEST"
+            val modeName = when (currentMode) {
+                1 -> "AURA TEST"
+                2 -> "GOONER TEST"
+                else -> "DOWN TEST"
+            }
 
             val send = android.content.Intent(
                 android.content.Intent.ACTION_SEND
@@ -172,13 +179,12 @@ class MainActivity : AppCompatActivity() {
             setPadding(0, dp(22), 0, dp(22))
         }, matchWrap())
 
-        // Přepínač režimu úplně dole
         modeButton = button("✨ PŘEPNOUT NA AURA TEST")
         root.addView(modeButton, matchWrap())
 
         modeButton.setOnClickListener {
             if (!scanning) {
-                auraMode = !auraMode
+                currentMode = (currentMode + 1) % 3
                 updateMode()
             }
         }
@@ -187,39 +193,61 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateMode() {
-        if (auraMode) {
-            title.text = "AURA TEST ✨"
-            subtitle.text = "Zábavný náhodný Aura test"
-            result.text = "Aura: --"
-            result.setTextColor(gold)
-            modeButton.text = "💀 ZPĚT NA DOWN TEST"
-            modeButton.backgroundTintList =
-                android.content.res.ColorStateList.valueOf(gold)
-        } else {
-            title.text = "DOWN TEST 💀"
-            subtitle.text = "Zábavný náhodný test"
-            result.text = "Down: -- %"
-            result.setTextColor(0xFFC4B5FD.toInt())
-            modeButton.text = "✨ PŘEPNOUT NA AURA TEST"
-            modeButton.backgroundTintList =
-                android.content.res.ColorStateList.valueOf(purple)
+        when (currentMode) {
+            1 -> {
+                title.text = "AURA TEST ✨"
+                subtitle.text = "Zábavný náhodný Aura test"
+                result.text = "Aura: --"
+                result.setTextColor(gold)
+                modeButton.text = "🔥 PŘEPNOUT NA GOONER TEST"
+                modeButton.backgroundTintList =
+                    android.content.res.ColorStateList.valueOf(gold)
+            }
+
+            2 -> {
+                title.text = "GOONER TEST 🔥"
+                subtitle.text = "Zábavné náhodné meme skóre"
+                result.text = "Gooner: -- %"
+                result.setTextColor(red)
+                modeButton.text = "💀 ZPĚT NA DOWN TEST"
+                modeButton.backgroundTintList =
+                    android.content.res.ColorStateList.valueOf(red)
+            }
+
+            else -> {
+                title.text = "DOWN TEST 💀"
+                subtitle.text = "Zábavný náhodný test"
+                result.text = "Down: -- %"
+                result.setTextColor(0xFFC4B5FD.toInt())
+                modeButton.text = "✨ PŘEPNOUT NA AURA TEST"
+                modeButton.backgroundTintList =
+                    android.content.res.ColorStateList.valueOf(purple)
+            }
         }
 
         refreshHistory()
     }
 
     private fun refreshHistory() {
-        val scores = if (auraMode) auraScores else downScores
-        val label = if (auraMode) "Aura" else "Down"
+        val scores = when (currentMode) {
+            1 -> auraScores
+            2 -> goonerScores
+            else -> downScores
+        }
+
+        val label = when (currentMode) {
+            1 -> "Aura"
+            2 -> "Gooner"
+            else -> "Down"
+        }
 
         history.text = if (scores.isEmpty()) {
             "Zatím žádné výsledky."
         } else {
             scores.mapIndexed { index, score ->
-                if (auraMode) {
-                    "${index + 1}. $label: $score / 1000"
-                } else {
-                    "${index + 1}. $label: $score %"
+                when (currentMode) {
+                    1 -> "${index + 1}. $label: $score / 1000"
+                    else -> "${index + 1}. $label: $score %"
                 }
             }.joinToString("\n")
         }
@@ -239,32 +267,50 @@ class MainActivity : AppCompatActivity() {
             result.animate().alpha(1f).setDuration(350).start()
         }.start()
 
-        val selectedAuraMode = auraMode
+        val selectedMode = currentMode
 
         android.os.Handler(mainLooper).postDelayed({
-            if (selectedAuraMode) {
-                val value = Random.nextInt(0, 1001)
-                result.text = String.format(
-                    Locale.getDefault(),
-                    "Aura: %d / 1000",
-                    value
-                )
+            when (selectedMode) {
+                1 -> {
+                    val value = Random.nextInt(0, 1001)
+                    result.text = String.format(
+                        Locale.getDefault(),
+                        "Aura: %d / 1000",
+                        value
+                    )
 
-                auraScores.add(0, value)
-                if (auraScores.size > 8) {
-                    auraScores.removeAt(auraScores.lastIndex)
+                    auraScores.add(0, value)
+                    if (auraScores.size > 8) {
+                        auraScores.removeAt(auraScores.lastIndex)
+                    }
                 }
-            } else {
-                val value = Random.nextInt(0, 101)
-                result.text = String.format(
-                    Locale.getDefault(),
-                    "Down: %d %%",
-                    value
-                )
 
-                downScores.add(0, value)
-                if (downScores.size > 8) {
-                    downScores.removeAt(downScores.lastIndex)
+                2 -> {
+                    val value = Random.nextInt(0, 101)
+                    result.text = String.format(
+                        Locale.getDefault(),
+                        "Gooner: %d %%",
+                        value
+                    )
+
+                    goonerScores.add(0, value)
+                    if (goonerScores.size > 8) {
+                        goonerScores.removeAt(goonerScores.lastIndex)
+                    }
+                }
+
+                else -> {
+                    val value = Random.nextInt(0, 101)
+                    result.text = String.format(
+                        Locale.getDefault(),
+                        "Down: %d %%",
+                        value
+                    )
+
+                    downScores.add(0, value)
+                    if (downScores.size > 8) {
+                        downScores.removeAt(downScores.lastIndex)
+                    }
                 }
             }
 
@@ -329,3 +375,4 @@ class MainActivity : AppCompatActivity() {
     private fun dp(value: Int) =
         (value * resources.displayMetrics.density).toInt()
 }
+ 
