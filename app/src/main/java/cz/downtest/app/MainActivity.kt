@@ -1,4 +1,5 @@
-   package cz.downtest.app
+   
+package cz.downtest.app
 
 import android.Manifest
 import android.content.Intent
@@ -21,7 +22,6 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
-import kotlin.random.Random
 
 data class GameMode(
     val name: String,
@@ -42,15 +42,21 @@ class MainActivity : AppCompatActivity() {
     private val gold = Color.rgb(255, 195, 60)
     private val red = Color.rgb(230, 65, 75)
     private val white = Color.WHITE
-    private val muted = Color.rgb(100, 100, 120)
+    private val muted = Color.rgb(130, 130, 150)
 
     private val handler = Handler(Looper.getMainLooper())
 
     private var cameraProvider: ProcessCameraProvider? = null
     private var previewView: PreviewView? = null
+
     private var currentMode = "DOWN TEST"
+    private var questionType = "DOWN TEST"
 
     private val history = mutableListOf<String>()
+
+    private var randomizedQuestions = listOf<Question>()
+    private val selectedAnswers = mutableMapOf<Int, Int>()
+    private var questionIndex = 0
 
     private val modes = listOf(
         GameMode("DOWN TEST", "💀", false),
@@ -63,13 +69,13 @@ class MainActivity : AppCompatActivity() {
         GameMode("SIGMA TEST", "🐺", true)
     )
 
-    private val questions = listOf(
+    private val downQuestions = listOf(
         Question(
             "Jak moc posloucháš songu Jan Koller?",
             listOf(
-                "Vždycky" to 5,
-                "Občas" to 5,
-                "Každý týden" to 5,
+                "Vždycky" to 20,
+                "Občas" to 15,
+                "Každý týden" to 10,
                 "Vůbec neposlouchám" to 5
             )
         ),
@@ -85,26 +91,166 @@ class MainActivity : AppCompatActivity() {
         Question(
             "Víš, co znamená, když ti někdo řekne, že jsi down?",
             listOf(
-                "Vím na 100 %" to 10,
-                "Asi jo" to 6,
-                "Asi ne" to 3,
-                "Vůbec nevím" to 0
+                "Vím na 100 %" to 20,
+                "Asi jo" to 15,
+                "Asi ne" to 10,
+                "Vůbec nevím" to 5
             )
         ),
         Question(
             "Jak často říkáš 67?",
             listOf(
-                "Hodně často" to 5,
-                "Občas" to 5,
-                "Řekl jsem to jenom párkrát" to 5,
-                "Nikdy jsem to neřekl" to 0
+                "Hodně často" to 20,
+                "Občas" to 15,
+                "Řekl jsem to jenom párkrát" to 10,
+                "Nikdy jsem to neřekl" to 5
             )
         ),
         Question(
             "Kolik si myslíš, že ti vyjde výsledek DOWN TESTU?",
             listOf(
                 "Míň než 50" to 20,
-                "Víc než 50" to 10
+                "Víc než 50" to 15,
+                "Přesně 50" to 10,
+                "Nevím" to 5
+            )
+        ),
+        Question(
+            "Co uděláš, když někdo řekne 67?",
+            listOf(
+                "Okamžitě to zopakuju" to 20,
+                "Začnu se smát" to 15,
+                "Jen se podívám" to 10,
+                "Nevím, o čem mluví" to 5
+            )
+        ),
+        Question(
+            "Jak často zapomínáš, co jsi chtěl říct?",
+            listOf(
+                "Pořád" to 20,
+                "Docela často" to 15,
+                "Občas" to 10,
+                "Nikdy" to 5
+            )
+        ),
+        Question(
+            "Co uděláš, když ti někdo řekne sigma?",
+            listOf(
+                "Začnu dělat sigma pózu" to 20,
+                "Řeknu skibidi" to 15,
+                "Zasměju se" to 10,
+                "Zeptám se, co to znamená" to 5
+            )
+        ),
+        Question(
+            "Jak dlouho vydržíš bez mobilu?",
+            listOf(
+                "Ani minutu" to 20,
+                "Pár hodin" to 15,
+                "Celý den" to 10,
+                "Klidně týden" to 5
+            )
+        ),
+        Question(
+            "Jak moc jsi někdy mimo?",
+            listOf(
+                "Jsem úplně jiná galaxie" to 20,
+                "Dost často" to 15,
+                "Občas" to 10,
+                "Většinou jsem v obraze" to 5
+            )
+        )
+    )
+
+    private val auraQuestions = listOf(
+        Question(
+            "Co uděláš, když někdo začne dělat frajera?",
+            listOf(
+                "Zůstanu v klidu" to 100,
+                "Zasměju se" to 50,
+                "Začnu se předvádět taky" to 0,
+                "Nechám se vyprovokovat" to -100
+            )
+        ),
+        Question(
+            "Jak se zachováš, když někdo potřebuje pomoc?",
+            listOf(
+                "Pomůžu mu okamžitě" to 100,
+                "Nabídnu mu pomoc" to 50,
+                "Počkám, jestli pomůže někdo jiný" to 0,
+                "Budu ho ignorovat" to -100
+            )
+        ),
+        Question(
+            "Co uděláš, když prohraješ hru?",
+            listOf(
+                "Pogratuluju soupeři" to 100,
+                "Zkusím to znovu" to 50,
+                "Trochu se naštvu" to 0,
+                "Začnu se hádat" to -100
+            )
+        ),
+        Question(
+            "Jak se chováš k novým lidem?",
+            listOf(
+                "Přivítám je a zapojím do party" to 100,
+                "Normálně se s nimi bavím" to 50,
+                "Čekám, až začnou oni" to 0,
+                "Dělám, že neexistují" to -100
+            )
+        ),
+        Question(
+            "Co uděláš, když uděláš chybu?",
+            listOf(
+                "Přiznám ji a napravím" to 100,
+                "Zasměju se tomu" to 50,
+                "Snažím se to přejít" to 0,
+                "Svedu to na někoho jiného" to -100
+            )
+        ),
+        Question(
+            "Jak reaguješ na kompliment?",
+            listOf(
+                "Poděkuju" to 100,
+                "Poděkuju a pochválím taky" to 50,
+                "Začnu se smát" to 0,
+                "Řeknu, že to není pravda" to -100
+            )
+        ),
+        Question(
+            "Co uděláš, když se tvoji kamarádi hádají?",
+            listOf(
+                "Pokusím se je usmířit" to 100,
+                "Vyslechnu obě strany" to 50,
+                "Radši odejdu" to 0,
+                "Ještě přiliju olej do ohně" to -100
+            )
+        ),
+        Question(
+            "Jaký máš přístup k novým výzvám?",
+            listOf(
+                "Jdu do toho bez strachu" to 100,
+                "Nejdřív si to promyslím" to 50,
+                "Moc se mi nechce" to 0,
+                "Vzdám to předem" to -100
+            )
+        ),
+        Question(
+            "Co uděláš, když někdo řekne špatný vtip?",
+            listOf(
+                "Zasměju se, abych ho podpořil" to 100,
+                "Zkusím přidat vlastní vtip" to 50,
+                "Jen se pousměju" to 0,
+                "Začnu ho kritizovat" to -100
+            )
+        ),
+        Question(
+            "Jak by tě popsali tvoji kamarádi?",
+            listOf(
+                "Spolehlivý člověk" to 100,
+                "Vtipálek" to 50,
+                "Tichý člověk" to 0,
+                "Chaotik" to -100
             )
         )
     )
@@ -130,9 +276,8 @@ class MainActivity : AppCompatActivity() {
         showMenu()
     }
 
-    private fun dp(value: Int): Int {
-        return (value * resources.displayMetrics.density).toInt()
-    }
+    private fun dp(value: Int): Int =
+        (value * resources.displayMetrics.density).toInt()
 
     private fun root(): LinearLayout {
         return LinearLayout(this).apply {
@@ -181,12 +326,10 @@ class MainActivity : AppCompatActivity() {
         stopCamera()
 
         val page = root()
-
         page.addView(
             label("💀 DOWN TEST", 32f, purple, true),
             params()
         )
-
         page.addView(
             label("Vyber si svůj test!", 17f, white),
             params()
@@ -202,7 +345,6 @@ class MainActivity : AppCompatActivity() {
                 "${mode.emoji}  ${mode.name}" +
                     if (mode.premium) "  🔒 PREMIUM" else ""
             )
-
             button.textSize = 18f
 
             list.addView(
@@ -223,12 +365,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         scroll.addView(list)
-
-        page.addView(
-            scroll,
-            LinearLayout.LayoutParams(-1, 0, 1f)
-        )
-
+        page.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
         page.addView(
             label("Je to jen joke, neberte to vážně.", 13f, muted),
             params()
@@ -239,9 +376,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun openMode(name: String) {
         currentMode = name
-
-        if (name == "DOWN TEST") {
-            showDownChoice()
+        if (name == "DOWN TEST" || name == "AURA TEST") {
+            showTestChoice(name)
         } else {
             showModeScreen(name)
         }
@@ -258,8 +394,239 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun showDownChoice() {
-        stopCamera()
+
+    private fun showTestChoice(name: String) {
+        currentMode = name
+
+        val page = root()
+        page.addView(
+            label(name, 30f, purple, true),
+            params()
+        )
+        page.addView(
+            label("Jak chceš test absolvovat?", 18f, white),
+            params()
+        )
+
+        val scanButton = makeButton("📷 SCAN")
+        val questionsButton = makeButton("❓ OTÁZKY")
+        val backButton = makeButton("⬅ ZPĚT")
+
+        page.addView(scanButton, params())
+        page.addView(questionsButton, params())
+        page.addView(backButton, params())
+
+        scanButton.setOnClickListener {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                showCameraScreen()
+            } else {
+                cameraPermission.launch(Manifest.permission.CAMERA)
+            }
+        }
+
+        questionsButton.setOnClickListener {
+            startQuestions(name)
+        }
+
+        backButton.setOnClickListener {
+            showMenu()
+        }
+
+        setContentView(page)
+    }
+
+    private fun startQuestions(name: String) {
+        questionType = name
+        randomizedQuestions = (
+            if (name == "AURA TEST") auraQuestions else downQuestions
+        ).shuffled()
+
+        selectedAnswers.clear()
+        questionIndex = 0
+        showQuestion()
+    }
+
+    private fun showQuestion() {
+        val question = randomizedQuestions[questionIndex]
+
+        val page = root()
+
+        page.addView(
+            label(questionType, 27f, purple, true),
+            params()
+        )
+
+        page.addView(
+            label(
+                "OTÁZKA ${questionIndex + 1} / ${randomizedQuestions.size}",
+                16f,
+                gold,
+                true
+            ),
+            params()
+        )
+
+        page.addView(
+            label(question.title, 22f, white, true).apply {
+                setPadding(dp(4), dp(25), dp(4), dp(25))
+            },
+            params()
+        )
+
+        question.answers.forEachIndexed { index, answer ->
+            val button = makeButton(answer.first)
+
+            if (selectedAnswers[questionIndex] == index) {
+                button.backgroundTintList =
+                    android.content.res.ColorStateList.valueOf(purple)
+            }
+
+            page.addView(
+                button,
+                LinearLayout.LayoutParams(-1, dp(58)).apply {
+                    topMargin = dp(6)
+                    bottomMargin = dp(6)
+                }
+            )
+
+            button.setOnClickListener {
+                selectedAnswers[questionIndex] = index
+                showQuestion()
+            }
+        }
+
+        val navigation = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+        }
+
+        val backButton = makeButton("⬅ ZPĚT")
+        val nextButton = makeButton(
+            if (questionIndex == randomizedQuestions.lastIndex) {
+                "VÝSLEDEK ➜"
+            } else {
+                "DALŠÍ ➜"
+            }
+        )
+
+        navigation.addView(
+            backButton,
+            LinearLayout.LayoutParams(0, dp(55), 1f)
+        )
+        navigation.addView(
+            nextButton,
+            LinearLayout.LayoutParams(0, dp(55), 1f)
+        )
+
+        page.addView(
+            navigation,
+            LinearLayout.LayoutParams(-1, dp(65)).apply {
+                topMargin = dp(20)
+            }
+        )
+
+        backButton.setOnClickListener {
+            if (questionIndex > 0) {
+                questionIndex--
+                showQuestion()
+            } else {
+                showTestChoice(questionType)
+            }
+        }
+
+        nextButton.setOnClickListener {
+            if (!selectedAnswers.containsKey(questionIndex)) {
+                Toast.makeText(
+                    this,
+                    "Nejdřív vyber odpověď!",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
+            if (questionIndex < randomizedQuestions.lastIndex) {
+                questionIndex++
+                showQuestion()
+            } else {
+                finishQuestions()
+            }
+        }
+
+        setContentView(page)
+    }
+
+    private fun finishQuestions() {
+        val score = randomizedQuestions.indices.sumOf { index ->
+            val selected = selectedAnswers[index] ?: 0
+            randomizedQuestions[index].answers[selected].second
+        }
+
+        if (questionType == "AURA TEST") {
+            showAuraQuestionResult(score)
+        } else {
+            showDownResult(score)
+        }
+    }
+
+    private fun showAuraQuestionResult(score: Int) {
+        history.add("AURA TEST: $score / 1000")
+
+        val page = root()
+
+        page.addView(
+            label("✨ AURA VÝSLEDEK", 29f, purple, true),
+            params()
+        )
+
+        page.addView(
+            label("$score / 1000", 38f, gold, true).apply {
+                setPadding(0, dp(35), 0, dp(25))
+            },
+            params()
+        )
+
+        val description = when {
+            score >= 700 -> "Obrovská aura! 🔥"
+            score >= 300 -> "Dobrá aura! 😎"
+            score >= 0 -> "Neutrální aura."
+            score >= -400 -> "Aura trochu pokulhává. 😅"
+            else -> "Aura je dneska na dovolené. 💀"
+        }
+
+        page.addView(
+            label(description, 21f, white, true),
+            params()
+        )
+
+        val againButton = makeButton("🔄 ZKUSIT ZNOVU")
+        val menuButton = makeButton("🏠 HLAVNÍ MENU")
+
+        page.addView(
+            againButton,
+            LinearLayout.LayoutParams(-1, dp(58)).apply {
+                topMargin = dp(35)
+            }
+        )
+        page.addView(menuButton, params())
+
+        againButton.setOnClickListener {
+            startQuestions("AURA TEST")
+        }
+
+        menuButton.setOnClickListener {
+            showMenu()
+        }
+
+        setContentView(page)
+    }
+
+
+    private fun showDownResult(score: Int) {
+        history.add("DOWN TEST: $score %")
 
         val page = root()
 
@@ -269,280 +636,50 @@ class MainActivity : AppCompatActivity() {
         )
 
         page.addView(
-            label("Vyber si způsob testování", 18f, white),
+            label("$score %", 42f, gold, true).apply {
+                setPadding(0, dp(30), 0, dp(20))
+            },
             params()
         )
 
-        val scan = makeButton("📸 SCAN")
-        page.addView(
-            scan,
-            LinearLayout.LayoutParams(-1, dp(75)).apply {
-                topMargin = dp(45)
-            }
-        )
-
-        scan.setOnClickListener {
-            currentMode = "DOWN TEST"
-            requestCamera()
+        val description = when {
+            score > 100 -> "WARNING! Extrémní DOWN LEVEL! ⚠️"
+            score >= 75 -> "Tohle je pořádný DOWN! 💀"
+            score >= 50 -> "Docela slušný DOWN!"
+            score >= 25 -> "Trochu DOWN."
+            else -> "Tvoje DOWN úroveň je nízká."
         }
 
-        val questionsButton = makeButton("❓ OTÁZKY")
         page.addView(
-            questionsButton,
-            LinearLayout.LayoutParams(-1, dp(75)).apply {
-                topMargin = dp(20)
-            }
+            label(description, 20f, white, true),
+            params()
         )
 
-        questionsButton.setOnClickListener {
-            showQuestions()
+        if (score > 100) {
+            page.addView(
+                label("⚠️ WARNING ⚠️", 25f, red, true).apply {
+                    setPadding(0, dp(15), 0, dp(15))
+                },
+                params()
+            )
         }
 
-        val back = makeButton("‹ ZPĚT")
+        val againButton = makeButton("🔄 ZKUSIT ZNOVU")
+        val menuButton = makeButton("🏠 HLAVNÍ MENU")
+
         page.addView(
-            back,
-            LinearLayout.LayoutParams(-1, dp(55)).apply {
+            againButton,
+            LinearLayout.LayoutParams(-1, dp(58)).apply {
                 topMargin = dp(30)
             }
         )
+        page.addView(menuButton, params())
 
-        back.setOnClickListener {
-            showMenu()
+        againButton.setOnClickListener {
+            startQuestions("DOWN TEST")
         }
 
-        setContentView(page)
-    }
-
-    private fun showQuestions() {
-        stopCamera()
-
-        val randomizedQuestions = questions.shuffled()
-        val selected = mutableMapOf<Int, Int>()
-
-        lateinit var renderQuestion: (Int) -> Unit
-
-        renderQuestion = { questionIndex ->
-            val page = root()
-            page.setPadding(dp(22), dp(30), dp(22), dp(25))
-            setContentView(page)
-
-            val question = randomizedQuestions[questionIndex]
-
-            page.addView(
-                label("💀 DOWN TEST", 24f, white, true),
-                params()
-            )
-
-            page.addView(
-                label(
-                    "OTÁZKA ${questionIndex + 1} / ${randomizedQuestions.size}",
-                    15f,
-                    purple,
-                    true
-                ).apply {
-                    setPadding(0, dp(18), 0, dp(25))
-                },
-                params()
-            )
-
-            page.addView(
-                label(question.title, 25f, white, true).apply {
-                    setPadding(dp(5), dp(20), dp(5), dp(30))
-                },
-                LinearLayout.LayoutParams(-1, 0, 1f)
-            )
-
-            val next = makeButton(
-                if (questionIndex == randomizedQuestions.lastIndex)
-                    "VYHODNOTIT TEST"
-                else
-                    "DALŠÍ OTÁZKA  →"
-            )
-
-            val answerButtons = mutableListOf<Button>()
-
-            question.answers.forEachIndexed { answerIndex, answer ->
-                val answerButton = makeButton(answer.first)
-                answerButton.textSize = 17f
-
-                answerButton.backgroundTintList =
-                    android.content.res.ColorStateList.valueOf(
-                        if (selected[questionIndex] == answerIndex)
-                            purple else panel
-                    )
-
-                page.addView(
-                    answerButton,
-                    LinearLayout.LayoutParams(-1, dp(65)).apply {
-                        bottomMargin = dp(10)
-                    }
-                )
-
-                answerButtons.add(answerButton)
-
-                answerButton.setOnClickListener {
-                    selected[questionIndex] = answerIndex
-
-                    answerButtons.forEachIndexed { index, button ->
-                        button.backgroundTintList =
-                            android.content.res.ColorStateList.valueOf(
-                                if (index == answerIndex) purple else panel
-                            )
-                    }
-
-                    next.isEnabled = true
-                    next.backgroundTintList =
-                        android.content.res.ColorStateList.valueOf(purple)
-                }
-            }
-
-            next.isEnabled = selected.containsKey(questionIndex)
-            next.backgroundTintList =
-                android.content.res.ColorStateList.valueOf(
-                    if (next.isEnabled) purple else muted
-                )
-
-            page.addView(
-                next,
-                LinearLayout.LayoutParams(-1, dp(65)).apply {
-                    topMargin = dp(18)
-                }
-            )
-
-            next.setOnClickListener {
-                if (selected.containsKey(questionIndex)) {
-                    if (questionIndex < randomizedQuestions.lastIndex) {
-                        renderQuestion(questionIndex + 1)
-                    } else {
-                        val score = randomizedQuestions.indices.sumOf { index ->
-                            randomizedQuestions[index]
-                                .answers[selected[index]!!].second + 30
-                        }
-
-                        showDownResult(score)
-                    }
-                }
-            }
-
-            val back = makeButton("‹ ZPĚT")
-
-            page.addView(
-                back,
-                LinearLayout.LayoutParams(-1, dp(50)).apply {
-                    topMargin = dp(10)
-                }
-            )
-
-            back.setOnClickListener {
-                if (questionIndex == 0) {
-                    showDownChoice()
-                } else {
-                    renderQuestion(questionIndex - 1)
-                }
-            }
-        }
-
-        renderQuestion(0)
-    }
-
-    private fun showDownResult(score: Int) {
-        stopCamera()
-        history.add("DOWN TEST: $score %")
-
-        if (score > 100) {
-            showWarning(score)
-            return
-        }
-
-        val page = root()
-
-        page.addView(
-            label("💀 DOWN TEST", 28f, purple, true),
-            params()
-        )
-
-        page.addView(
-            label("TVŮJ VÝSLEDEK", 17f, white, true).apply {
-                setPadding(0, dp(30), 0, dp(15))
-            },
-            params()
-        )
-
-        page.addView(
-            label("$score %", 58f, gold, true),
-            LinearLayout.LayoutParams(-1, 0, 1f)
-        )
-
-        page.addView(
-            label("Je to jen joke, neberte to vážně.", 14f, muted),
-            params()
-        )
-
-        val again = makeButton("🔄 ZKUSIT ZNOVU")
-        page.addView(
-            again,
-            LinearLayout.LayoutParams(-1, dp(60)).apply {
-                topMargin = dp(20)
-            }
-        )
-
-        again.setOnClickListener {
-            showQuestions()
-        }
-
-        val back = makeButton("ZPĚT DO MENU")
-        page.addView(
-            back,
-            LinearLayout.LayoutParams(-1, dp(55)).apply {
-                topMargin = dp(10)
-            }
-        )
-
-        back.setOnClickListener {
-            showMenu()
-        }
-
-        setContentView(page)
-    }
-
-    private fun showWarning(score: Int) {
-        stopCamera()
-
-        val page = root()
-        page.setBackgroundColor(Color.rgb(45, 8, 15))
-
-        page.addView(
-            label("⚠️ WARNING ⚠️", 29f, red, true),
-            params()
-        )
-
-        page.addView(
-            label("SYSTEM ERROR", 25f, red, true).apply {
-                setPadding(0, dp(25), 0, dp(15))
-            },
-            params()
-        )
-
-        page.addView(
-            label("$score % DOWN", 40f, white, true),
-            params()
-        )
-
-        page.addView(
-            label(
-                "ROZBIL JSI APLIKACI!\n\n" +
-                    "Jsi tak velkej DOWN, že jsi rozbil celou aplikaci. 💀",
-                21f,
-                white,
-                true
-            ),
-            LinearLayout.LayoutParams(-1, 0, 1f)
-        )
-
-        val back = makeButton("ZPĚT DO MENU")
-        page.addView(back, params())
-
-        back.setOnClickListener {
+        menuButton.setOnClickListener {
             showMenu()
         }
 
@@ -550,57 +687,45 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showModeScreen(name: String) {
-        stopCamera()
         currentMode = name
-
-        val mode = modes.firstOrNull { it.name == name }
-        val emoji = mode?.emoji ?: "💀"
 
         val page = root()
 
         page.addView(
-            label("$emoji  $name", 29f, purple, true),
+            label(name, 30f, purple, true),
             params()
         )
 
         page.addView(
-            label("Připrav se na skenování!", 17f, white).apply {
-                setPadding(0, dp(20), 0, dp(35))
-            },
+            label("Vyber, co chceš udělat.", 18f, white),
             params()
         )
 
-        val scan = makeButton("📸 START SCAN")
-        page.addView(
-            scan,
-            LinearLayout.LayoutParams(-1, dp(75))
-        )
+        val scanButton = makeButton("📷 START SCAN")
+        val historyButton = makeButton("📜 HISTORIE")
+        val backButton = makeButton("⬅ ZPĚT")
 
-        scan.setOnClickListener {
-            requestCamera()
-        }
+        page.addView(scanButton, params())
+        page.addView(historyButton, params())
+        page.addView(backButton, params())
 
-        val historyButton = makeButton("📋 HISTORIE")
-        page.addView(
-            historyButton,
-            LinearLayout.LayoutParams(-1, dp(55)).apply {
-                topMargin = dp(15)
+        scanButton.setOnClickListener {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                showCameraScreen()
+            } else {
+                cameraPermission.launch(Manifest.permission.CAMERA)
             }
-        )
+        }
 
         historyButton.setOnClickListener {
             showHistory()
         }
 
-        val back = makeButton("‹ ZPĚT DO MENU")
-        page.addView(
-            back,
-            LinearLayout.LayoutParams(-1, dp(55)).apply {
-                topMargin = dp(15)
-            }
-        )
-
-        back.setOnClickListener {
+        backButton.setOnClickListener {
             showMenu()
         }
 
@@ -608,114 +733,121 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showHistory() {
-        val text = if (history.isEmpty()) {
-            "Zatím nemáš žádné výsledky."
+        val page = root()
+
+        page.addView(
+            label("📜 HISTORIE", 30f, purple, true),
+            params()
+        )
+
+        if (history.isEmpty()) {
+            page.addView(
+                label("Zatím tu nemáš žádné výsledky.", 17f, white),
+                params()
+            )
         } else {
-            history.takeLast(8).reversed().joinToString("\n\n")
+            history.asReversed().forEachIndexed { index, item ->
+                page.addView(
+                    label("${index + 1}. $item", 17f, white).apply {
+                        setPadding(0, dp(8), 0, dp(8))
+                    },
+                    params()
+                )
+            }
         }
 
-        AlertDialog.Builder(this)
-            .setTitle("📋 HISTORIE")
-            .setMessage(text)
-            .setPositiveButton("ZAVŘÍT", null)
-            .show()
+        val clearButton = makeButton("🗑 SMAZAT HISTORII")
+        val backButton = makeButton("⬅ ZPĚT")
+
+        page.addView(
+            clearButton,
+            LinearLayout.LayoutParams(-1, dp(55)).apply {
+                topMargin = dp(20)
+            }
+        )
+        page.addView(backButton, params())
+
+        clearButton.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle("Smazat historii?")
+                .setMessage("Opravdu chceš smazat všechny výsledky?")
+                .setNegativeButton("NE", null)
+                .setPositiveButton("ANO") { _, _ ->
+                    history.clear()
+                    showHistory()
+                }
+                .show()
+        }
+
+        backButton.setOnClickListener {
+            if (currentMode == "DOWN TEST" || currentMode == "AURA TEST") {
+                showTestChoice(currentMode)
+            } else {
+                showModeScreen(currentMode)
+            }
+        }
+
+        setContentView(page)
     }
 
-    private fun requestCamera() {
-        if (
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            showCameraScreen()
-        } else {
-            cameraPermission.launch(Manifest.permission.CAMERA)
-        }
-    }
 
     private fun showCameraScreen() {
         val page = root()
 
         page.addView(
-            label("📸 $currentMode", 27f, purple, true),
+            label("📷 $currentMode", 27f, purple, true),
             params()
         )
 
-        previewView = PreviewView(this).apply {
+        page.addView(
+            label("Připrav se na skenování!", 17f, white),
+            params()
+        )
+
+        val camera = PreviewView(this).apply {
             scaleType = PreviewView.ScaleType.FILL_CENTER
         }
 
+        previewView = camera
+
         page.addView(
-            previewView,
+            camera,
             LinearLayout.LayoutParams(-1, 0, 1f).apply {
-                topMargin = dp(20)
-                bottomMargin = dp(20)
-            }
-        )
-
-        page.addView(
-            label("Připrav se na skenování!", 15f, white),
-            params()
-        )
-
-        val scan = makeButton("START SCAN")
-        page.addView(
-            scan,
-            LinearLayout.LayoutParams(-1, dp(65)).apply {
                 topMargin = dp(15)
+                bottomMargin = dp(15)
             }
         )
 
-        scan.setOnClickListener {
-            scan.isEnabled = false
-            scan.text = "SCANNING..."
+        val status = label("Kamera se připravuje...", 18f, gold, true)
+        page.addView(status, params())
 
-            val scanningText = label(
-                "SCANNING... 0 %",
-                25f,
-                gold,
-                true
-            )
+        val scanButton = makeButton("🔍 SPUSTIT SKEN")
+        val backButton = makeButton("⬅ ZPĚT")
 
-            page.addView(
-                scanningText,
-                params()
-            )
+        page.addView(scanButton, params())
+        page.addView(backButton, params())
 
-            var progress = 0
+        scanButton.setOnClickListener {
+            scanButton.isEnabled = false
+            status.text = "Skenování probíhá..."
 
-            val scanRunnable = object : Runnable {
-                override fun run() {
-                    progress += 10
-                    scanningText.text = "SCANNING... $progress %"
+            handler.postDelayed({
+                scanButton.isEnabled = true
 
-                    if (progress < 100) {
-                        handler.postDelayed(this, 180)
-                    } else {
-                        handler.postDelayed({
-                            val result = generateScanResult(currentMode)
-                            showScanResult(result)
-                        }, 400)
-                    }
+                val score = when (currentMode) {
+                    "AURA TEST" -> Random.nextInt(-1000, 1001)
+                    else -> Random.nextInt(0, 201)
                 }
-            }
 
-            handler.postDelayed(scanRunnable, 180)
+                showScanResult(score)
+            }, 3000)
         }
 
-        val back = makeButton("‹ ZPĚT")
-        page.addView(
-            back,
-            LinearLayout.LayoutParams(-1, dp(50)).apply {
-                topMargin = dp(10)
-            }
-        )
-
-        back.setOnClickListener {
+        backButton.setOnClickListener {
             stopCamera()
-            if (currentMode == "DOWN TEST") {
-                showDownChoice()
+
+            if (currentMode == "DOWN TEST" || currentMode == "AURA TEST") {
+                showTestChoice(currentMode)
             } else {
                 showModeScreen(currentMode)
             }
@@ -726,19 +858,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startCamera() {
-        val future = ProcessCameraProvider.getInstance(this)
+        val providerFuture = ProcessCameraProvider.getInstance(this)
 
-        future.addListener({
+        providerFuture.addListener({
             try {
-                val provider = future.get()
+                val provider = providerFuture.get()
                 cameraProvider = provider
 
-                val preview = Preview.Builder()
-                    .build()
-                    .also {
-                        it.surfaceProvider =
-                            previewView?.surfaceProvider
-                    }
+                val preview = Preview.Builder().build().also {
+                    it.setSurfaceProvider(previewView?.surfaceProvider)
+                }
 
                 provider.unbindAll()
 
@@ -751,155 +880,104 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(
                     this,
                     "Kameru se nepodařilo spustit.",
-                    Toast.LENGTH_SHORT
+                    Toast.LENGTH_LONG
                 ).show()
             }
         }, ContextCompat.getMainExecutor(this))
     }
 
     private fun stopCamera() {
-        cameraProvider?.unbindAll()
+        handler.removeCallbacksAndMessages(null)
+
+        try {
+            cameraProvider?.unbindAll()
+        } catch (_: Exception) {
+        }
+
         cameraProvider = null
         previewView = null
-        handler.removeCallbacksAndMessages(null)
     }
 
-    private fun generateScanResult(mode: String): Int {
-        return when (mode) {
-            "DOWN TEST" -> {
-                // Skrytý náhodný easter egg.
-                if (Random.nextInt(100) < 5) {
-                    100
-                } else {
-                    Random.nextInt(0, 101)
-                }
-            }
-
-            "AURA TEST" -> {
-                Random.nextInt(-1000, 1001)
-            }
-
-            "GOONER TEST" -> {
-                Random.nextInt(0, 101)
-            }
-
-            "TROLL TEST" -> Random.nextInt(0, 101)
-            "GIGACHAD TEST" -> Random.nextInt(0, 101)
-            "BRAINROT TEST" -> Random.nextInt(0, 101)
-            "NPC TEST" -> Random.nextInt(0, 101)
-            "SIGMA TEST" -> Random.nextInt(0, 101)
-
-            else -> Random.nextInt(0, 101)
-        }
-    }
-
-    private fun showScanResult(result: Int) {
+    private fun showScanResult(score: Int) {
         stopCamera()
 
-        val mode = currentMode
-
-        val resultText = if (mode == "AURA TEST") {
-            "$result / 1000"
-        } else {
-            "$result %"
-        }
-
-        history.add("$mode: $resultText")
+        history.add("$currentMode SCAN: $score")
 
         val page = root()
 
         page.addView(
-            label("✨ $mode", 28f, purple, true),
+            label("📊 VÝSLEDEK SCANU", 28f, purple, true),
             params()
         )
 
         page.addView(
-            label("TVŮJ VÝSLEDEK", 17f, white, true).apply {
-                setPadding(0, dp(30), 0, dp(15))
+            label(
+                if (currentMode == "AURA TEST") {
+                    "$score / 1000"
+                } else {
+                    "$score %"
+                },
+                40f,
+                gold,
+                true
+            ).apply {
+                setPadding(0, dp(35), 0, dp(25))
             },
             params()
         )
 
-        page.addView(
-            label(resultText, 54f, gold, true),
-            LinearLayout.LayoutParams(-1, 0, 1f)
-        )
-
-        val description = when (mode) {
-            "DOWN TEST" -> "Tvoje DOWN skóre je $result %! 💀"
-            "AURA TEST" -> {
-                if (result < 0) {
-                    "Tvoje aura dnes potřebuje restart. 💀"
-                } else {
-                    "Tvoje aura byla změřena! ✨"
-                }
+        val description = when (currentMode) {
+            "AURA TEST" -> when {
+                score >= 700 -> "Obrovská aura! 🔥"
+                score >= 300 -> "Dobrá aura! 😎"
+                score >= 0 -> "Neutrální aura."
+                score >= -400 -> "Aura trochu pokulhává. 😅"
+                else -> "Aura je dneska na dovolené. 💀"
             }
 
-            "GOONER TEST" -> "Výsledek tvého testu je $result %!"
-            else -> "Výsledek testu: $result %!"
+            "DOWN TEST" -> when {
+                score > 100 -> "WARNING! Extrémní DOWN LEVEL! ⚠️"
+                score >= 75 -> "Tohle je pořádný DOWN! 💀"
+                score >= 50 -> "Docela slušný DOWN!"
+                score >= 25 -> "Trochu DOWN."
+                else -> "Nízký DOWN level."
+            }
+
+            else -> "Skenování režimu $currentMode dokončeno!"
         }
 
         page.addView(
-            label(description, 17f, white),
+            label(description, 20f, white, true),
             params()
         )
 
-        page.addView(
-            label("Je to jen joke, neberte to vážně.", 13f, muted),
-            params()
-        )
-
-        val again = makeButton("🔄 ZKUSIT ZNOVU")
-        page.addView(
-            again,
-            LinearLayout.LayoutParams(-1, dp(60)).apply {
-                topMargin = dp(20)
-            }
-        )
-
-        again.setOnClickListener {
-            showModeScreen(mode)
+        if (currentMode == "DOWN TEST" && score > 100) {
+            page.addView(
+                label("⚠️ WARNING ⚠️", 25f, red, true),
+                params()
+            )
         }
 
-        val share = makeButton("📤 SDÍLET VÝSLEDEK")
+        val againButton = makeButton("🔄 ZKUSIT ZNOVU")
+        val menuButton = makeButton("🏠 HLAVNÍ MENU")
+
         page.addView(
-            share,
-            LinearLayout.LayoutParams(-1, dp(55)).apply {
-                topMargin = dp(10)
+            againButton,
+            LinearLayout.LayoutParams(-1, dp(58)).apply {
+                topMargin = dp(30)
             }
         )
+        page.addView(menuButton, params())
 
-        share.setOnClickListener {
-            shareText("$mode: $resultText")
+        againButton.setOnClickListener {
+            showCameraScreen()
         }
 
-        val back = makeButton("ZPĚT DO MENU")
-        page.addView(
-            back,
-            LinearLayout.LayoutParams(-1, dp(55)).apply {
-                topMargin = dp(10)
-            }
-        )
-
-        back.setOnClickListener {
+        menuButton.setOnClickListener {
             showMenu()
         }
 
         setContentView(page)
-    }
-
-    private fun shareText(text: String) {
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(
-                Intent.EXTRA_TEXT,
-                "$text\nJe to jen joke, neberte to vážně. 💀"
-            )
-        }
-
-        startActivity(
-            Intent.createChooser(intent, "Sdílet výsledek")
-        )
     }
 
     override fun onDestroy() {
