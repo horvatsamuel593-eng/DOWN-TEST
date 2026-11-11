@@ -22,6 +22,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import kotlin.random.Random
 
 data class GameMode(
     val name: String,
