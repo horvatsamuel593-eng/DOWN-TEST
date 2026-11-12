@@ -26,44 +26,43 @@ import kotlin.random.Random
 
 data class GameMode(
     val name: String,
-    val emoji: String,
     val premium: Boolean = false
 )
 
 data class Question(
-    val title: String,
-    val answers: List<Pair<String, Int>>
+    val text: String,
+    val answers: List<String>,
+    val points: List<Int>
 )
 
 class MainActivity : AppCompatActivity() {
 
-    private val purple = Color.rgb(145, 70, 255)
-    private val gold = Color.rgb(255, 210, 50)
-    private val white = Color.WHITE
-    private val red = Color.RED
-    private val backgroundColor = Color.rgb(18, 12, 30)
+    private val backgroundColor = Color.rgb(15, 15, 20)
+    private val cardColor = Color.rgb(30, 30, 40)
+    private val accentColor = Color.rgb(120, 70, 255)
+    private val whiteColor = Color.WHITE
+    private val grayColor = Color.LTGRAY
 
     private val handler = Handler(Looper.getMainLooper())
+
     private val history = mutableListOf<String>()
 
     private var currentMode = "DOWN TEST"
-    private var questionType = "DOWN TEST"
-    private var questionIndex = 0
-    private var randomizedQuestions = listOf<Question>()
-    private val selectedAnswers = mutableMapOf<Int, Int>()
-
+    private var questions = listOf<Question>()
+    private var currentQuestion = 0
+    private var selectedAnswers = mutableListOf<Int>()
     private var cameraProvider: ProcessCameraProvider? = null
     private var previewView: PreviewView? = null
 
     private val modes = listOf(
-        GameMode("DOWN TEST", "💀"),
-        GameMode("AURA TEST", "✨"),
-        GameMode("GOONER TEST", "😎"),
-        GameMode("TROLL TEST", "🤡", true),
-        GameMode("GIGACHAD TEST", "🗿", true),
-        GameMode("BRAINROT TEST", "🧠", true),
-        GameMode("NPC TEST", "🤖", true),
-        GameMode("SIGMA TEST", "🐺", true)
+        GameMode("DOWN TEST"),
+        GameMode("AURA TEST"),
+        GameMode("GOONER TEST"),
+        GameMode("TROLL TEST", true),
+        GameMode("GIGACHAD TEST", true),
+        GameMode("BRAINROT TEST", true),
+        GameMode("NPC TEST", true),
+        GameMode("SIGMA TEST", true)
     )
 
     private val cameraPermission =
@@ -71,12 +70,12 @@ class MainActivity : AppCompatActivity() {
             ActivityResultContracts.RequestPermission()
         ) { granted ->
             if (granted) {
-                showCameraScreen()
+                startCamera()
             } else {
                 Toast.makeText(
                     this,
-                    "Pro skenování potřebuješ povolit kameru.",
-                    Toast.LENGTH_LONG
+                    "Kamera nebyla povolena.",
+                    Toast.LENGTH_SHORT
                 ).show()
             }
         }
@@ -87,800 +86,511 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun dp(value: Int): Int =
-        (value * resources.displayMetrics.density).toInt()
+    private fun dp(value: Int): Int {
+        return (value * resources.displayMetrics.density).toInt()
+    }
 
     private fun root(): LinearLayout {
         return LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(dp(20), dp(25), dp(20), dp(25))
+            gravity = Gravity.CENTER
+            setPadding(dp(20), dp(20), dp(20), dp(20))
             setBackgroundColor(backgroundColor)
         }
     }
 
-    private fun params(): LinearLayout.LayoutParams {
-        return LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply {
-            bottomMargin = dp(10)
+    private fun params(
+        width: Int = LinearLayout.LayoutParams.MATCH_PARENT,
+        height: Int = LinearLayout.LayoutParams.WRAP_CONTENT
+    ): LinearLayout.LayoutParams {
+        return LinearLayout.LayoutParams(width, height).apply {
+            setMargins(0, dp(7), 0, dp(7))
         }
     }
 
     private fun label(
         text: String,
-        size: Float,
-        color: Int,
-        bold: Boolean = false
+        size: Float = 22f
     ): TextView {
         return TextView(this).apply {
             this.text = text
             textSize = size
-            setTextColor(color)
+            setTextColor(whiteColor)
             gravity = Gravity.CENTER
-            if (bold) {
-                setTypeface(null, android.graphics.Typeface.BOLD)
-            }
+            setPadding(dp(10), dp(12), dp(10), dp(12))
         }
     }
 
-    private fun makeButton(text: String): Button {
+    private fun makeButton(
+        text: String,
+        action: () -> Unit
+    ): Button {
         return Button(this).apply {
             this.text = text
             textSize = 16f
-            setTextColor(white)
-            backgroundTintList =
-                android.content.res.ColorStateList.valueOf(purple)
-            isAllCaps = false
+            setOnClickListener { action() }
         }
     }
 
     private fun showMenu() {
-        val page = root()
+        stopCamera()
 
-        page.addView(
-            label("💀 DOWN TEST", 32f, purple, true),
-            params()
-        )
-
-        page.addView(
-            label("Vyber si svůj test!", 19f, white),
-            params()
-        )
-
-        val scroll = ScrollView(this)
-        val list = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-        }
+        val layout = root()
+        layout.addView(label("DOWN TEST", 34f))
+        layout.addView(label("Vyber si svůj test", 18f))
 
         modes.forEach { mode ->
-            val button = makeButton(
-                "${mode.emoji} ${mode.name}" +
-                    if (mode.premium) " 🔒 PREMIUM" else ""
-            )
+            val buttonText =
+                if (mode.premium) "🔒 ${mode.name}" else mode.name
 
-            list.addView(button, params())
-
-            button.setOnClickListener {
-                if (mode.premium) {
-                    AlertDialog.Builder(this)
-                        .setTitle("🔒 PREMIUM")
-                        .setMessage("Tento režim je zatím zamčený.")
-                        .setPositiveButton("OK", null)
-                        .show()
-                } else {
-                    currentMode = mode.name
-                    if (mode.name == "DOWN TEST" ||
-                        mode.name == "AURA TEST"
-                    ) {
-                        showTestChoice(mode.name)
+            layout.addView(
+                makeButton(buttonText) {
+                    if (mode.premium) {
+                        AlertDialog.Builder(this)
+                            .setTitle("PREMIUM")
+                            .setMessage(
+                                "Tento režim je zatím zamčený."
+                            )
+                            .setPositiveButton("OK", null)
+                            .show()
                     } else {
-                        showModeScreen(mode.name)
+                        currentMode = mode.name
+                        showTestChoice(mode.name)
                     }
-                }
-            }
+                },
+                params()
+            )
         }
 
-        scroll.addView(list)
-        page.addView(
-            scroll,
-            LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                0,
-                1f
-            )
-        )
-
-        setContentView(page)
-    }
-
-    private fun showTestChoice(name: String) {
-        currentMode = name
-
-        val page = root()
-
-        page.addView(
-            label("💀 $name", 30f, purple, true),
-            params()
-        )
-
-        page.addView(
-            label("Vyber si způsob testování", 18f, white),
-            params()
-        )
-
-        val scanButton = makeButton("📸 SCAN")
-        val questionsButton = makeButton("📝 OTÁZKY")
-        val backButton = makeButton("⬅ ZPĚT")
-
-        page.addView(scanButton, params())
-        page.addView(questionsButton, params())
-        page.addView(backButton, params())
-
-        scanButton.setOnClickListener {
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.CAMERA
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                showCameraScreen()
-            } else {
-                cameraPermission.launch(Manifest.permission.CAMERA)
-            }
-        }
-
-        questionsButton.setOnClickListener {
-            startQuestions(name)
-        }
-
-        backButton.setOnClickListener {
-            showMenu()
-        }
-
-        setContentView(page)
-    }
-
-
-    private fun downQuestions(): List<Question> = listOf(
-        Question(
-            "Jak moc posloucháš songu Jan Koller?",
-            listOf(
-                "Vždycky" to 20,
-                "Občas" to 15,
-                "Každý týden" to 10,
-                "Vůbec neposlouchám" to 5
-            )
-        ),
-        Question(
-            "Na jaké YouTubery se koukáš nebo koukal?",
-            listOf(
-                "Fizi" to 20,
-                "Tary" to 15,
-                "Porty" to 10,
-                "Dodo" to 5
-            )
-        ),
-        Question(
-            "Víš, co znamená, když ti někdo řekne, že jsi down?",
-            listOf(
-                "Vím na 100 %" to 20,
-                "Asi jo" to 15,
-                "Asi ne" to 10,
-                "Vůbec nevím" to 5
-            )
-        ),
-        Question(
-            "Jak často říkáš 67?",
-            listOf(
-                "Hodně často" to 20,
-                "Občas" to 15,
-                "Řekl jsem to jen párkrát" to 10,
-                "Nikdy jsem to neřekl" to 5
-            )
-        ),
-        Question(
-            "Kolik si myslíš, že ti vyjde výsledek DOWN TESTU?",
-            listOf(
-                "Míň než 50" to 20,
-                "Víc než 50" to 15,
-                "Přesně 50" to 10,
-                "Nevím" to 5
-            )
-        ),
-        Question(
-            "Co uděláš, když někdo řekne 67?",
-            listOf(
-                "Okamžitě to zopakuju" to 20,
-                "Začnu se smát" to 15,
-                "Jen se podívám" to 10,
-                "Nevím, o čem mluví" to 5
-            )
-        ),
-        Question(
-            "Jak často zapomínáš, co jsi chtěl říct?",
-            listOf(
-                "Pořád" to 20,
-                "Docela často" to 15,
-                "Občas" to 10,
-                "Nikdy" to 5
-            )
-        ),
-        Question(
-            "Co uděláš, když ti někdo řekne sigma?",
-            listOf(
-                "Začnu dělat sigma pózu" to 20,
-                "Řeknu skibidi" to 15,
-                "Zasměju se" to 10,
-                "Zeptám se, co to znamená" to 5
-            )
-        ),
-        Question(
-            "Jak dlouho vydržíš bez mobilu?",
-            listOf(
-                "Ani minutu" to 20,
-                "Pár hodin" to 15,
-                "Celý den" to 10,
-                "Klidně týden" to 5
-            )
-        ),
-        Question(
-            "Jak moc jsi někdy mimo?",
-            listOf(
-                "Jsem úplně jiná galaxie" to 20,
-                "Dost často" to 15,
-                "Občas" to 10,
-                "Většinou jsem v obraze" to 5
-            )
-        )
-    )
-
-    private fun auraQuestions(): List<Question> = listOf(
-        Question(
-            "Co uděláš, když někdo začne dělat frajera?",
-            listOf(
-                "Zůstanu v klidu" to 100,
-                "Zasměju se" to 50,
-                "Začnu se předvádět taky" to 0,
-                "Nechám se vyprovokovat" to -100
-            )
-        ),
-        Question(
-            "Jak se zachováš, když někdo potřebuje pomoc?",
-            listOf(
-                "Pomůžu mu okamžitě" to 100,
-                "Nabídnu mu pomoc" to 50,
-                "Počkám, jestli pomůže někdo jiný" to 0,
-                "Budu ho ignorovat" to -100
-            )
-        ),
-        Question(
-            "Co uděláš, když prohraješ hru?",
-            listOf(
-                "Pogratuluju soupeři" to 100,
-                "Zkusím to znovu" to 50,
-                "Trochu se naštvu" to 0,
-                "Začnu se hádat" to -100
-            )
-        ),
-        Question(
-            "Jak se chováš k novým lidem?",
-            listOf(
-                "Přivítám je a zapojím do party" to 100,
-                "Normálně se s nimi bavím" to 50,
-                "Čekám, až začnou oni" to 0,
-                "Dělám, že neexistují" to -100
-            )
-        ),
-        Question(
-            "Co uděláš, když uděláš chybu?",
-            listOf(
-                "Přiznám ji a napravím" to 100,
-                "Zasměju se tomu" to 50,
-                "Snažím se to přejít" to 0,
-                "Svedu to na někoho jiného" to -100
-            )
-        ),
-        Question(
-            "Jak reaguješ na kompliment?",
-            listOf(
-                "Poděkuju" to 100,
-                "Poděkuju a pochválím taky" to 50,
-                "Začnu se smát" to 0,
-                "Řeknu, že to není pravda" to -100
-            )
-        ),
-        Question(
-            "Co uděláš, když se tvoji kamarádi hádají?",
-            listOf(
-                "Pokusím se je usmířit" to 100,
-                "Vyslechnu obě strany" to 50,
-                "Radši odejdu" to 0,
-                "Ještě přiliju olej do ohně" to -100
-            )
-        ),
-        Question(
-            "Jaký máš přístup k novým výzvám?",
-            listOf(
-                "Jdu do toho bez strachu" to 100,
-                "Nejdřív si to promyslím" to 50,
-                "Moc se mi nechce" to 0,
-                "Vzdám to předem" to -100
-            )
-        ),
-        Question(
-            "Co uděláš, když někdo řekne špatný vtip?",
-            listOf(
-                "Zasměju se, abych ho podpořil" to 100,
-                "Zkusím přidat vlastní vtip" to 50,
-                "Jen se pousměju" to 0,
-                "Začnu ho kritizovat" to -100
-            )
-        ),
-        Question(
-            "Jak by tě popsali tvoji kamarádi?",
-            listOf(
-                "Spolehlivý člověk" to 100,
-                "Vtipálek" to 50,
-                "Tichý člověk" to 0,
-                "Chaotik" to -100
-            )
-        )
-    )
-
-
-    private fun startQuestions(name: String) {
-        questionType = name
-        currentMode = name
-        questionIndex = 0
-        selectedAnswers.clear()
-
-        randomizedQuestions = (
-            if (name == "AURA TEST") {
-                auraQuestions()
-            } else {
-                downQuestions()
-            }
-        ).shuffled()
-
-        showQuestion()
-    }
-
-    private fun showQuestion() {
-        val question = randomizedQuestions[questionIndex]
-        val page = root()
-
-        page.addView(
-            label("💀 $questionType – OTÁZKY", 25f, purple, true),
-            params()
-        )
-
-        page.addView(
-            label(
-                "Otázka ${questionIndex + 1} / ${randomizedQuestions.size}",
-                16f,
-                gold,
-                true
-            ),
-            params()
-        )
-
-        page.addView(
-            label(question.title, 22f, white, true).apply {
-                setPadding(dp(5), dp(25), dp(5), dp(25))
+        layout.addView(
+            makeButton("HISTORIE") {
+                showHistory()
             },
             params()
         )
 
-        question.answers.forEachIndexed { index, answer ->
-            val button = makeButton(answer.first)
+        setContentView(layout)
+    }
 
-            if (selectedAnswers[questionIndex] == index) {
-                button.backgroundTintList =
-                    android.content.res.ColorStateList.valueOf(gold)
-            }
+    private fun showTestChoice(name: String) {
+        val layout = root()
 
-            page.addView(
-                button,
-                LinearLayout.LayoutParams(-1, dp(58)).apply {
-                    topMargin = dp(7)
-                    bottomMargin = dp(7)
-                }
-            )
+        layout.addView(label(name, 30f))
+        layout.addView(label("Vyber způsob testování", 18f))
 
-            button.setOnClickListener {
-                selectedAnswers[questionIndex] = index
-                showQuestion()
-            }
-        }
-
-        val backButton = makeButton("⬅ ZPĚT")
-        val nextButton = makeButton(
-            if (questionIndex == randomizedQuestions.lastIndex) {
-                "VYHODNOTIT TEST"
-            } else {
-                "DALŠÍ ➜"
-            }
+        layout.addView(
+            makeButton("SCAN") {
+                showCameraScreen()
+            },
+            params()
         )
 
-        page.addView(backButton, params())
-        page.addView(nextButton, params())
-
-        backButton.setOnClickListener {
-            if (questionIndex > 0) {
-                questionIndex--
-                showQuestion()
-            } else {
-                showTestChoice(questionType)
-            }
+        if (name == "DOWN TEST" || name == "AURA TEST") {
+            layout.addView(
+                makeButton("OTÁZKY") {
+                    startQuestions(name)
+                },
+                params()
+            )
         }
 
-        nextButton.setOnClickListener {
-            if (!selectedAnswers.containsKey(questionIndex)) {
-                Toast.makeText(
-                    this,
-                    "Nejdřív vyber odpověď!",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
-
-            if (questionIndex < randomizedQuestions.lastIndex) {
-                questionIndex++
-                showQuestion()
-            } else {
-                finishQuestions()
-            }
+        if (name == "GOONER TEST") {
+            layout.addView(
+                makeButton("OTÁZKY") {
+                    startQuestions(name)
+                },
+                params()
+            )
         }
 
-        setContentView(page)
+        layout.addView(
+            makeButton("ZPĚT") {
+                showMenu()
+            },
+            params()
+        )
+
+        setContentView(layout)
+    }
+
+
+    private fun downQuestions(): List<Question> {
+        val answers = listOf(
+            "Rozhodně ano",
+            "Občas",
+            "Spíš ne",
+            "Vůbec ne"
+        )
+
+        return listOf(
+            "Jak často používáš slovo 67?",
+            "Jak dobře znáš internetové memy?",
+            "Jak často sleduješ YouTube?",
+            "Jak moc jsi mimo?",
+            "Jak často zapomeneš, co jsi chtěl říct?",
+            "Co uděláš, když někdo řekne sigma?",
+            "Jak moc tě baví brainrot?",
+            "Jak často používáš slovo rizz?",
+            "Jak rychle pochopíš nový meme?",
+            "Jak moc jsi DOWN?"
+        ).map { Question(it, answers, listOf(20, 15, 10, 5)) }
+    }
+
+    private fun auraQuestions(): List<Question> {
+        val answers = listOf(
+            "Obrovská aura",
+            "Dobrá aura",
+            "Neutrální aura",
+            "Ztráta aury"
+        )
+
+        return listOf(
+            "Pomůžeš kamarádovi, když potřebuje pomoc?",
+            "Jak reaguješ na trapnou situaci?",
+            "Dokážeš zachovat klid?",
+            "Jak se chováš k ostatním?",
+            "Umíš přiznat svou chybu?",
+            "Dokážeš někoho rozesmát?",
+            "Jak zvládáš těžké situace?",
+            "Pomůžeš někomu, koho neznáš?",
+            "Jak moc si věříš?",
+            "Jak bys popsal svou auru?"
+        ).map { Question(it, answers, listOf(100, 50, 0, -100)) }
+    }
+
+    private fun goonerQuestions(): List<Question> {
+        return listOf(
+            Question(
+                "Jak často goonuješ?",
+                listOf("Každý den", "Každý týden", "Každý měsíc", "Nikdy"),
+                listOf(20, 15, 10, 5)
+            ),
+            Question(
+                "Jak dlouho obvykle vydržíš u svého gooning maratonu?",
+                listOf("Velmi dlouho", "Docela dlouho", "Jen chvíli", "Vůbec žádný nemám"),
+                listOf(20, 15, 10, 5)
+            ),
+            Question(
+                "Jak často na gooning vůbec pomyslíš?",
+                listOf("Pořád", "Docela často", "Občas", "Nikdy"),
+                listOf(20, 15, 10, 5)
+            ),
+            Question(
+                "Dokážeš se od telefonu na chvíli odtrhnout?",
+                listOf("Bez problémů", "Většinou ano", "Moc ne", "Telefon je můj život"),
+                listOf(20, 15, 10, 5)
+            ),
+            Question(
+                "Jak moc znáš gooning memy?",
+                listOf("Jsem expert", "Znám jich hodně", "Znám jen pár", "Vůbec nevím"),
+                listOf(20, 15, 10, 5)
+            ),
+            Question(
+                "Jak reaguješ na hlášku GOON MODE ACTIVATED?",
+                listOf("Okamžitě pochopím", "Začnu se smát", "Dělám, že nic", "Nevím, co to znamená"),
+                listOf(20, 15, 10, 5)
+            ),
+            Question(
+                "Jak často používáš slovo gooning?",
+                listOf("Každý den", "Každý týden", "Občas", "Nikdy"),
+                listOf(20, 15, 10, 5)
+            ),
+            Question(
+                "Jak dobře ovládáš svoje internetové návyky?",
+                listOf("Dokonale", "Docela dobře", "Někdy mám problém", "Internet mě ovládá"),
+                listOf(20, 15, 10, 5)
+            ),
+            Question(
+                "Jak moc bereš gooning memy vážně?",
+                listOf("Vůbec, je to meme", "Trochu", "Docela dost", "Až moc"),
+                listOf(20, 15, 10, 5)
+            ),
+            Question(
+                "Jaký máš podle sebe gooner level?",
+                listOf("Level 1000", "Level 500", "Level 100", "Level 0"),
+                listOf(20, 15, 10, 5)
+            )
+        )
+    }
+
+
+    private fun startQuestions(name: String) {
+        currentMode = name
+
+        questions = when (name) {
+            "DOWN TEST" -> downQuestions()
+            "AURA TEST" -> auraQuestions()
+            "GOONER TEST" -> goonerQuestions()
+            else -> downQuestions()
+        }.shuffled()
+
+        currentQuestion = 0
+        selectedAnswers.clear()
+        showQuestion()
+    }
+
+    private fun showQuestion() {
+        val question = questions[currentQuestion]
+        val layout = root()
+
+        layout.addView(
+            label("$currentMode\nOtázka ${currentQuestion + 1}/10", 25f)
+        )
+
+        layout.addView(label(question.text, 22f))
+
+        question.answers.forEachIndexed { index, answer ->
+            layout.addView(
+                makeButton(answer) {
+                    selectedAnswers.add(index)
+                    if (currentQuestion < questions.lastIndex) {
+                        currentQuestion++
+                        showQuestion()
+                    } else {
+                        finishQuestions()
+                    }
+                },
+                params()
+            )
+        }
+
+        layout.addView(
+            makeButton("ZRUŠIT TEST") {
+                showTestChoice(currentMode)
+            },
+            params()
+        )
+
+        setContentView(layout)
     }
 
     private fun finishQuestions() {
-        val score = randomizedQuestions.indices.sumOf { index ->
-            val answerIndex = selectedAnswers[index]!!
-            randomizedQuestions[index].answers[answerIndex].second
+        var score = 0
+
+        questions.forEachIndexed { index, question ->
+            val answerIndex = selectedAnswers[index]
+            score += question.points[answerIndex]
         }
 
-        if (questionType == "AURA TEST") {
-            showAuraResult(score)
-        } else {
-            showDownResult(score)
+        when (currentMode) {
+            "DOWN TEST" -> showDownResult(score)
+            "AURA TEST" -> showAuraResult(score)
+            "GOONER TEST" -> showGoonerResult(score)
         }
     }
 
     private fun showDownResult(score: Int) {
-        val page = root()
+        history.add("DOWN TEST: $score / 200")
 
-        page.addView(
-            label("💀 DOWN TEST", 30f, purple, true),
-            params()
-        )
+        val layout = root()
+        layout.addView(label("DOWN TEST", 30f))
+        layout.addView(label("$score / 200", 36f))
 
         if (score > 100) {
-            history.add("DOWN TEST: ERROR")
-
-            page.addView(
-                label("ERROR", 34f, red, true),
-                params()
-            )
-
-            page.addView(
-                label(
-                    "APLIKACI SI ROZBIL, PROTOŽE JSEŠ AŽ TAK VELKEJ DOWN 💀",
-                    22f,
-                    white,
-                    true
-                ),
-                params()
+            layout.addView(label("ERROR", 30f))
+            layout.addView(
+                label("Tvoje DOWN úroveň je podezřele vysoká!", 18f)
             )
         } else {
-            history.add("DOWN TEST: $score / 200")
-
-            page.addView(
-                label("$score / 200", 42f, gold, true),
-                params()
-            )
-
-            val description = when {
-                score >= 150 -> "Tohle je pořádný DOWN! 💀"
-                score >= 100 -> "Docela slušný DOWN!"
-                score >= 50 -> "Trochu DOWN."
-                else -> "Nízký DOWN level."
-            }
-
-            page.addView(
-                label(description, 20f, white, true),
-                params()
-            )
+            layout.addView(label("Test dokončen!", 20f))
         }
 
-        val againButton = makeButton("🔄 ZKUSIT ZNOVU")
-        val menuButton = makeButton("🏠 HLAVNÍ MENU")
-
-        page.addView(againButton, params())
-        page.addView(menuButton, params())
-
-        againButton.setOnClickListener {
-            startQuestions("DOWN TEST")
-        }
-
-        menuButton.setOnClickListener {
-            showMenu()
-        }
-
-        setContentView(page)
+        layout.addView(makeButton("MENU") { showMenu() }, params())
+        setContentView(layout)
     }
 
     private fun showAuraResult(score: Int) {
-        val page = root()
-
         history.add("AURA TEST: $score / 1000")
 
-        page.addView(
-            label("✨ AURA TEST", 30f, purple, true),
-            params()
-        )
+        val layout = root()
+        layout.addView(label("AURA TEST", 30f))
+        layout.addView(label("$score / 1000", 36f))
 
-        page.addView(
-            label("$score / 1000", 42f, gold, true),
-            params()
-        )
-
-        val description = when {
-            score >= 700 -> "Obrovská aura! 🔥"
-            score >= 300 -> "Dobrá aura! 😎"
+        val resultText = when {
+            score >= 700 -> "Obrovská aura!"
+            score >= 300 -> "Dobrá aura!"
             score >= 0 -> "Neutrální aura."
-            score >= -400 -> "Aura trochu pokulhává. 😅"
-            else -> "Aura je dneska na dovolené. 💀"
+            score >= -500 -> "Ztrácíš auru!"
+            else -> "AURA V KRITICKÉM STAVU!"
         }
 
-        page.addView(
-            label(description, 20f, white, true),
-            params()
-        )
+        layout.addView(label(resultText, 22f))
+        layout.addView(makeButton("MENU") { showMenu() }, params())
 
-        val againButton = makeButton("🔄 ZKUSIT ZNOVU")
-        val menuButton = makeButton("🏠 HLAVNÍ MENU")
-
-        page.addView(againButton, params())
-        page.addView(menuButton, params())
-
-        againButton.setOnClickListener {
-            startQuestions("AURA TEST")
-        }
-
-        menuButton.setOnClickListener {
-            showMenu()
-        }
-
-        setContentView(page)
+        setContentView(layout)
     }
 
+    private fun showGoonerResult(score: Int) {
+        history.add("GOONER TEST: $score / 200")
 
-    private fun showModeScreen(name: String) {
-        currentMode = name
-        val page = root()
+        val layout = root()
+        layout.addView(label("GOONER TEST", 30f))
+        layout.addView(label("$score / 200", 36f))
 
-        page.addView(label(name, 30f, purple, true), params())
-        page.addView(label("Vyber, co chceš udělat.", 18f, white), params())
-
-        val scanButton = makeButton("📷 START SCAN")
-        val historyButton = makeButton("📜 HISTORIE")
-        val backButton = makeButton("⬅ ZPĚT")
-
-        page.addView(scanButton, params())
-        page.addView(historyButton, params())
-        page.addView(backButton, params())
-
-        scanButton.setOnClickListener {
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.CAMERA
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                showCameraScreen()
-            } else {
-                cameraPermission.launch(Manifest.permission.CAMERA)
-            }
+        val resultText = when {
+            score >= 170 -> "GOONER LEGEND!"
+            score >= 130 -> "GOONER EXPERT!"
+            score >= 90 -> "GOONER FAN!"
+            score >= 50 -> "GOONER NOVÁČEK!"
+            else -> "GOONER LEVEL 0"
         }
 
-        historyButton.setOnClickListener { showHistory() }
-        backButton.setOnClickListener { showMenu() }
+        layout.addView(label(resultText, 22f))
+        layout.addView(makeButton("MENU") { showMenu() }, params())
 
-        setContentView(page)
+        setContentView(layout)
     }
+
 
     private fun showHistory() {
-        val page = root()
-
-        page.addView(label("📜 HISTORIE", 30f, purple, true), params())
+        val layout = root()
+        layout.addView(label("HISTORIE", 30f))
 
         if (history.isEmpty()) {
-            page.addView(
-                label("Zatím tu nemáš žádné výsledky.", 17f, white),
-                params()
-            )
+            layout.addView(label("Zatím žádné výsledky.", 18f))
         } else {
-            history.asReversed().forEachIndexed { index, item ->
-                page.addView(
-                    label("${index + 1}. $item", 17f, white),
-                    params()
-                )
+            history.asReversed().forEach {
+                layout.addView(label(it, 18f))
             }
         }
 
-        val clearButton = makeButton("🗑 SMAZAT HISTORII")
-        val backButton = makeButton("⬅ ZPĚT")
+        layout.addView(
+            makeButton("ZPĚT") { showMenu() },
+            params()
+        )
 
-        page.addView(clearButton, params())
-        page.addView(backButton, params())
-
-        clearButton.setOnClickListener {
-            AlertDialog.Builder(this)
-                .setTitle("Smazat historii?")
-                .setMessage("Opravdu chceš smazat všechny výsledky?")
-                .setNegativeButton("NE", null)
-                .setPositiveButton("ANO") { _, _ ->
-                    history.clear()
-                    showHistory()
-                }
-                .show()
-        }
-
-        backButton.setOnClickListener {
-            showMenu()
-        }
-
-        setContentView(page)
+        setContentView(layout)
     }
 
     private fun showCameraScreen() {
-        val page = root()
+        stopCamera()
 
-        page.addView(label("📷 $currentMode", 27f, purple, true), params())
-        page.addView(label("Připrav se na skenování!", 17f, white), params())
+        val layout = root()
+        layout.addView(label("$currentMode SCAN", 28f))
 
-        val camera = PreviewView(this).apply {
-            scaleType = PreviewView.ScaleType.FILL_CENTER
+        previewView = PreviewView(this).apply {
+            layoutParams = params(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(350)
+            )
         }
-        previewView = camera
+        layout.addView(previewView)
 
-        page.addView(
-            camera,
-            LinearLayout.LayoutParams(-1, 0, 1f).apply {
-                topMargin = dp(15)
-                bottomMargin = dp(15)
-            }
+        layout.addView(
+            makeButton("SPUSTIT SCAN") {
+                if (ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.CAMERA
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    startCamera()
+                    handler.postDelayed({
+                        val score = when (currentMode) {
+                            "AURA TEST" -> Random.nextInt(-1000, 1001)
+                            "GOONER TEST" -> Random.nextInt(0, 201)
+                            else -> Random.nextInt(0, 201)
+                        }
+                        stopCamera()
+                        showScanResult(score)
+                    }, 3000)
+                } else {
+                    cameraPermission.launch(Manifest.permission.CAMERA)
+                }
+            },
+            params()
         )
 
-        val status = label("Kamera se připravuje...", 18f, gold, true)
-        page.addView(status, params())
-
-        val scanButton = makeButton("🔍 SPUSTIT SKEN")
-        val backButton = makeButton("⬅ ZPĚT")
-
-        page.addView(scanButton, params())
-        page.addView(backButton, params())
-
-        scanButton.setOnClickListener {
-            scanButton.isEnabled = false
-            status.text = "Skenování probíhá..."
-
-            handler.postDelayed({
-                scanButton.isEnabled = true
-
-                val score = when (currentMode) {
-                    "AURA TEST" -> Random.nextInt(-1000, 1001)
-                    "DOWN TEST" -> Random.nextInt(0, 101)
-                    else -> Random.nextInt(0, 101)
-                }
-
-                showScanResult(score)
-            }, 3000)
-        }
-
-        backButton.setOnClickListener {
-            stopCamera()
-            if (currentMode == "DOWN TEST" || currentMode == "AURA TEST") {
+        layout.addView(
+            makeButton("ZPĚT") {
+                stopCamera()
                 showTestChoice(currentMode)
-            } else {
-                showModeScreen(currentMode)
-            }
-        }
+            },
+            params()
+        )
 
-        setContentView(page)
-        startCamera()
+        setContentView(layout)
     }
 
     private fun startCamera() {
-        val providerFuture = ProcessCameraProvider.getInstance(this)
+        val view = previewView ?: return
 
-        providerFuture.addListener({
+        val cameraProviderFuture =
+            ProcessCameraProvider.getInstance(this)
+
+        cameraProviderFuture.addListener({
+            val provider = cameraProviderFuture.get()
+            cameraProvider = provider
+
+            val preview = Preview.Builder().build().also {
+                it.surfaceProvider = view.surfaceProvider
+            }
+
             try {
-                val provider = providerFuture.get()
-                cameraProvider = provider
-
-                val preview = Preview.Builder().build().also {
-                    it.setSurfaceProvider(previewView?.surfaceProvider)
-                }
-
                 provider.unbindAll()
                 provider.bindToLifecycle(
                     this,
                     CameraSelector.DEFAULT_FRONT_CAMERA,
                     preview
                 )
-            } catch (_: Exception) {
+            } catch (exception: Exception) {
                 Toast.makeText(
                     this,
                     "Kameru se nepodařilo spustit.",
-                    Toast.LENGTH_LONG
+                    Toast.LENGTH_SHORT
                 ).show()
             }
         }, ContextCompat.getMainExecutor(this))
     }
 
     private fun stopCamera() {
-        handler.removeCallbacksAndMessages(null)
-
-        try {
-            cameraProvider?.unbindAll()
-        } catch (_: Exception) {
-        }
-
+        cameraProvider?.unbindAll()
         cameraProvider = null
-        previewView = null
     }
 
     private fun showScanResult(score: Int) {
-        stopCamera()
         history.add("$currentMode SCAN: $score")
 
-        val page = root()
-        page.addView(label("📊 VÝSLEDEK SCANU", 28f, purple, true), params())
+        val layout = root()
+        layout.addView(label("$currentMode SCAN", 30f))
 
-        val resultText = if (currentMode == "AURA TEST") {
-            "$score / 1000"
-        } else {
-            "$score %"
-        }
-
-        page.addView(label(resultText, 40f, gold, true), params())
-
-        val description = when (currentMode) {
-            "AURA TEST" -> when {
-                score >= 700 -> "Obrovská aura! 🔥"
-                score >= 300 -> "Dobrá aura! 😎"
+        if (currentMode == "AURA TEST") {
+            layout.addView(label("$score / 1000", 36f))
+            val result = when {
+                score >= 700 -> "Obrovská aura!"
+                score >= 300 -> "Dobrá aura!"
                 score >= 0 -> "Neutrální aura."
-                score >= -400 -> "Aura trochu pokulhává. 😅"
-                else -> "Aura je dneska na dovolené. 💀"
+                score >= -500 -> "Ztrácíš auru!"
+                else -> "AURA V KRITICKÉM STAVU!"
             }
-            "DOWN TEST" -> when {
-                score >= 75 -> "Tohle je pořádný DOWN! 💀"
-                score >= 50 -> "Docela slušný DOWN!"
-                score >= 25 -> "Trochu DOWN."
-                else -> "Nízký DOWN level."
-            }
-            else -> "Skenování režimu $currentMode dokončeno!"
+            layout.addView(label(result, 22f))
+        } else if (currentMode == "GOONER TEST") {
+            layout.addView(label("$score / 200", 36f))
+            layout.addView(label("Výsledek je pouze pro zábavu!", 18f))
+        } else {
+            layout.addView(label("$score / 200", 36f))
+            layout.addView(label("Výsledek je pouze pro zábavu!", 18f))
         }
 
-        page.addView(label(description, 20f, white, true), params())
+        layout.addView(
+            makeButton("ZKUSIT ZNOVU") {
+                showCameraScreen()
+            },
+            params()
+        )
 
-        val againButton = makeButton("🔄 ZKUSIT ZNOVU")
-        val menuButton = makeButton("🏠 HLAVNÍ MENU")
+        layout.addView(
+            makeButton("MENU") {
+                showMenu()
+            },
+            params()
+        )
 
-        page.addView(againButton, params())
-        page.addView(menuButton, params())
-
-        againButton.setOnClickListener { showCameraScreen() }
-        menuButton.setOnClickListener { showMenu() }
-
-        setContentView(page)
+        setContentView(layout)
     }
 
     override fun onDestroy() {
         stopCamera()
+        handler.removeCallbacksAndMessages(null)
         super.onDestroy()
     }
 }
