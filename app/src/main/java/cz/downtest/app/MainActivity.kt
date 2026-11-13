@@ -259,58 +259,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun goonerQuestions(): List<Question> {
-        return listOf(
-            Question(
-                "Jak často goonuješ?",
-                listOf("Každý den", "Každý týden", "Každý měsíc", "Nikdy"),
-                listOf(20, 15, 10, 5)
-            ),
-            Question(
-                "Jak dlouho obvykle vydržíš u svého gooning maratonu?",
-                listOf("Velmi dlouho", "Docela dlouho", "Jen chvíli", "Vůbec žádný nemám"),
-                listOf(20, 15, 10, 5)
-            ),
-            Question(
-                "Jak často na gooning vůbec pomyslíš?",
-                listOf("Pořád", "Docela často", "Občas", "Nikdy"),
-                listOf(20, 15, 10, 5)
-            ),
-            Question(
-                "Dokážeš se od telefonu na chvíli odtrhnout?",
-                listOf("Bez problémů", "Většinou ano", "Moc ne", "Telefon je můj život"),
-                listOf(20, 15, 10, 5)
-            ),
-            Question(
-                "Jak moc znáš gooning memy?",
-                listOf("Jsem expert", "Znám jich hodně", "Znám jen pár", "Vůbec nevím"),
-                listOf(20, 15, 10, 5)
-            ),
-            Question(
-                "Jak reaguješ na hlášku GOON MODE ACTIVATED?",
-                listOf("Okamžitě pochopím", "Začnu se smát", "Dělám, že nic", "Nevím, co to znamená"),
-                listOf(20, 15, 10, 5)
-            ),
-            Question(
-                "Jak často používáš slovo gooning?",
-                listOf("Každý den", "Každý týden", "Občas", "Nikdy"),
-                listOf(20, 15, 10, 5)
-            ),
-            Question(
-                "Jak dobře ovládáš svoje internetové návyky?",
-                listOf("Dokonale", "Docela dobře", "Někdy mám problém", "Internet mě ovládá"),
-                listOf(20, 15, 10, 5)
-            ),
-            Question(
-                "Jak moc bereš gooning memy vážně?",
-                listOf("Vůbec, je to meme", "Trochu", "Docela dost", "Až moc"),
-                listOf(20, 15, 10, 5)
-            ),
-            Question(
-                "Jaký máš podle sebe gooner level?",
-                listOf("Level 1000", "Level 500", "Level 100", "Level 0"),
-                listOf(20, 15, 10, 5)
-            )
+        val answers = listOf(
+            "Jsem meme expert",
+            "Znám jich docela dost",
+            "Znám jen pár",
+            "Vůbec se v nich nevyznám"
         )
+        val memeQuestions = listOf(
+            "Jak rychle poznáš nový internetový meme?",
+            "Co uděláš, když někdo napíše 67?",
+            "Jak dobře znáš populární brainrot memy?",
+            "Jak často posíláš kamarádům vtipná videa?",
+            "Poznáš meme jen podle jedné hlášky?",
+            "Jak reaguješ, když někdo řekne sigma?",
+            "Kolik internetových trendů znáš?",
+            "Dokážeš vysvětlit meme, kterému se všichni smějí?",
+            "Jak často používáš meme hlášky v běžné konverzaci?",
+            "Jaký je tvůj meme level?"
+        )
+        return memeQuestions.map {
+            Question(it, answers, listOf(20, 15, 10, 5))
+        }
     }
 
 
@@ -380,21 +349,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showDownResult(score: Int) {
-        history.add("DOWN TEST: $score / 200")
-
+        val percentage = (score / 2).coerceIn(0, 100)
+        history.add("DOWN TEST: $percentage%")
         val layout = root()
         layout.addView(label("DOWN TEST", 30f))
-        layout.addView(label("$score / 200", 36f))
-
-        if (score > 100) {
-            layout.addView(label("ERROR", 30f))
-            layout.addView(
-                label("Tvoje DOWN úroveň je podezřele vysoká!", 18f)
-            )
-        } else {
-            layout.addView(label("Test dokončen!", 20f))
-        }
-
+        layout.addView(label("$percentage%", 36f))
+        layout.addView(label("Test dokončen!", 20f))
         layout.addView(makeButton("MENU") { showMenu() }, params())
         setContentView(layout)
     }
@@ -421,23 +381,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showGoonerResult(score: Int) {
-        history.add("GOONER TEST: $score / 200")
-
+        val percentage = (score / 2).coerceIn(0, 100)
+        history.add("GOONER TEST: $percentage%")
         val layout = root()
         layout.addView(label("GOONER TEST", 30f))
-        layout.addView(label("$score / 200", 36f))
-
+        layout.addView(label("$percentage%", 36f))
         val resultText = when {
-            score >= 170 -> "GOONER LEGEND!"
-            score >= 130 -> "GOONER EXPERT!"
-            score >= 90 -> "GOONER FAN!"
-            score >= 50 -> "GOONER NOVÁČEK!"
-            else -> "GOONER LEVEL 0"
+            percentage >= 90 -> "MEME LEGEND!"
+            percentage >= 70 -> "MEME EXPERT!"
+            percentage >= 50 -> "MEME FAN!"
+            else -> "MEME NOVÁČEK!"
         }
-
         layout.addView(label(resultText, 22f))
         layout.addView(makeButton("MENU") { showMenu() }, params())
-
         setContentView(layout)
     }
 
@@ -487,8 +443,7 @@ class MainActivity : AppCompatActivity() {
                     handler.postDelayed({
                         val score = when (currentMode) {
                             "AURA TEST" -> Random.nextInt(-1000, 1001)
-                            "GOONER TEST" -> Random.nextInt(0, 201)
-                            else -> Random.nextInt(0, 201)
+                            else -> Random.nextInt(0, 101)
                         }
                         stopCamera()
                         showScanResult(score)
@@ -548,13 +503,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showScanResult(score: Int) {
-        history.add("$currentMode SCAN: $score")
-
+        val isAura = currentMode == "AURA TEST"
+        val displayedScore = if (isAura) score else score.coerceIn(0, 100)
+        history.add("$currentMode SCAN: " + if (isAura) "$displayedScore / 1000" else "$displayedScore%")
         val layout = root()
         layout.addView(label("$currentMode SCAN", 30f))
-
-        if (currentMode == "AURA TEST") {
-            layout.addView(label("$score / 1000", 36f))
+        if (isAura) {
+            layout.addView(label("$displayedScore / 1000", 36f))
             val result = when {
                 score >= 700 -> "Obrovská aura!"
                 score >= 300 -> "Dobrá aura!"
@@ -563,11 +518,8 @@ class MainActivity : AppCompatActivity() {
                 else -> "AURA V KRITICKÉM STAVU!"
             }
             layout.addView(label(result, 22f))
-        } else if (currentMode == "GOONER TEST") {
-            layout.addView(label("$score / 200", 36f))
-            layout.addView(label("Výsledek je pouze pro zábavu!", 18f))
         } else {
-            layout.addView(label("$score / 200", 36f))
+            layout.addView(label("$displayedScore%", 36f))
             layout.addView(label("Výsledek je pouze pro zábavu!", 18f))
         }
 
