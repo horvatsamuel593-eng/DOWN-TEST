@@ -570,7 +570,15 @@ class MainActivity : AppCompatActivity() {
         val page = root()
         history.add("DOWN TEST: $percentage %")
         page.addView(label("💀 DOWN TEST", 30f, purple, true), params())
-        page.addView(label("$percentage %", 42f, gold, true), params())
+        if (percentage >= 100) {
+            page.addView(label("ERROR", 34f, red, true), params())
+            page.addView(
+                label("APLIKACI SI ROZBIL, PROTOŽE JSEŠ AŽ TAK VELKEJ DOWN 💀", 22f, white, true),
+                params()
+            )
+        } else {
+            page.addView(label("$percentage %", 42f, gold, true), params())
+        }
         val description = when {
             percentage >= 75 -> "Tohle je pořádný DOWN! 💀"
             percentage >= 50 -> "Docela slušný DOWN!"
