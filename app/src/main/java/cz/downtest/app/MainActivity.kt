@@ -432,16 +432,16 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun goonerQuestions(): List<Question> = listOf(
-        Question("Jak rychle poznáš nový internetový meme?", listOf("Okamžitě" to 20, "Většinou rychle" to 15, "Někdy" to 10, "Skoro nikdy" to 5)),
-        Question("Co uděláš, když někdo napíše 67?", listOf("Hned odpovím 67" to 20, "Pošlu meme" to 15, "Zasměju se" to 10, "Nevím, o co jde" to 5)),
-        Question("Jak dobře znáš brainrot memy?", listOf("Znám skoro všechny" to 20, "Znám hodně z nich" to 15, "Jen pár" to 10, "Vůbec" to 5)),
-        Question("Jak často posíláš kamarádům vtipná videa?", listOf("Každý den" to 20, "Často" to 15, "Občas" to 10, "Nikdy" to 5)),
-        Question("Poznáš meme jen podle jedné hlášky?", listOf("Jasně, skoro vždy" to 20, "Většinou" to 15, "Někdy" to 10, "Vůbec" to 5)),
-        Question("Co uděláš, když někdo řekne sigma?", listOf("Přidám sigma pózu" to 20, "Řeknu vlastní hlášku" to 15, "Zasměju se" to 10, "Nevím, co to znamená" to 5)),
-        Question("Kolik internetových trendů znáš?", listOf("Obrovské množství" to 20, "Docela dost" to 15, "Několik" to 10, "Skoro žádné" to 5)),
-        Question("Dokážeš vysvětlit meme, kterému se všichni smějí?", listOf("Jasně a ještě přidám kontext" to 20, "Většinou ano" to 15, "Někdy" to 10, "Vůbec" to 5)),
-        Question("Jak často používáš meme hlášky v konverzaci?", listOf("Pořád" to 20, "Často" to 15, "Občas" to 10, "Nikdy" to 5)),
-        Question("Jaký je tvůj meme level?", listOf("Meme legenda" to 20, "Expert" to 15, "Fanoušek" to 10, "Začátečník" to 5))
+        Question("Jak moc tě dokážou pohltit internetové memy?", listOf("Úplně mě vtáhnou 💀" to 20, "Docela dost" to 15, "Jen občas" to 10, "Vůbec" to 5)),
+        Question("Jak dlouho vydržíš v „goon mode“ podle internetových memů?", listOf("Jsem nezastavitelný" to 20, "Několik hodin" to 15, "Jen pár minut" to 10, "Ani nevím, co to je" to 5)),
+        Question("Proč nejčastěji chodíš na internet?", listOf("Abych se odreagoval, když se nudím" to 20, "Kvůli videím a zábavě" to 15, "Vyhledávám si různé věci" to 10, "Nakupuju různé věci, třeba nábytek" to 5)),
+        Question("Dokážeš se od svého telefonu na chvíli odtrhnout?", listOf("Bez problémů" to 20, "Většinou ano" to 15, "Moc ne" to 10, "Telefon je můj život" to 5)),
+        Question("Jak moc znáš gooning memy?", listOf("Jsem expert" to 20, "Znám jich hodně" to 15, "Znám jen pár" to 10, "Vůbec nevím, o čem mluvíš" to 5)),
+        Question("Jak bys reagoval, kdyby někdo řekl „goon mode activated“?", listOf("Okamžitě pochopím" to 20, "Začnu se smát" to 15, "Budu dělat, že nic" to 10, "Zeptám se, co to znamená" to 5)),
+        Question("Jak často používáš slovo gooning v konverzaci?", listOf("Každý den" to 20, "Každý týden" to 15, "Občas" to 10, "Nikdy" to 5)),
+        Question("Jak dobře dokážeš ovládat svoje internetové návyky?", listOf("Naprosto dokonale" to 20, "Docela dobře" to 15, "Někdy mám problém" to 10, "Internet mě ovládá" to 5)),
+        Question("Jak moc bereš gooning memy vážně?", listOf("Vůbec, je to jen meme" to 20, "Trochu" to 15, "Docela dost" to 10, "Beru to až moc vážně" to 5)),
+        Question("Jaký máš podle sebe gooner level?", listOf("Level 1000" to 20, "Level 500" to 15, "Level 100" to 10, "Level 0" to 5))
     )
 
     private fun startQuestions(name: String) {
