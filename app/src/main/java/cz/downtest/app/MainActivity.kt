@@ -444,6 +444,71 @@ class MainActivity : AppCompatActivity() {
         Question("Jaký máš podle sebe gooner level?", listOf("Level 1000" to 20, "Level 500" to 15, "Level 100" to 10, "Level 0" to 5))
     )
 
+    private fun trollQuestions(): List<Question> = listOf(
+        Question("Jak často děláš kamarádům naschvály?", listOf("Pořád" to 20, "Často" to 15, "Občas" to 10, "Nikdy" to 5)),
+        Question("Jak reaguješ, když se někdo nachytá na tvůj prank?", listOf("Směju se jako blázen" to 20, "Zasměju se" to 15, "Řeknu mu pravdu" to 10, "Je mi to jedno" to 5)),
+        Question("Jaký prank máš nejradši?", listOf("Překvapení" to 20, "Falešné zprávy" to 15, "Vtipné zvuky" to 10, "Žádný" to 5)),
+        Question("Dokážeš udržet vážnou tvář?", listOf("Nikdy" to 20, "Skoro nikdy" to 15, "Většinou ano" to 10, "Vždycky" to 5)),
+        Question("Jak často říkáš „to byl jen prank“?", listOf("Každý den" to 20, "Často" to 15, "Občas" to 10, "Nikdy" to 5)),
+        Question("Co uděláš, když někdo nachytá tebe?", listOf("Vymyslím odvetu" to 20, "Zasměju se" to 15, "Trochu se naštvu" to 10, "Neřeším to" to 5)),
+        Question("Jaký máš troll level?", listOf("1000" to 20, "500" to 15, "100" to 10, "0" to 5)),
+        Question("Jak dlouho dokážeš někoho napínat?", listOf("Celý den" to 20, "Několik hodin" to 15, "Pár minut" to 10, "Vůbec" to 5)),
+        Question("Jak reaguješ na špatný vtip?", listOf("Udělám ještě horší" to 20, "Zasměju se" to 15, "Protočím oči" to 10, "Ignoruju ho" to 5)),
+        Question("Jsi ve třídě známý jako troll?", listOf("Totální legenda" to 20, "Docela jo" to 15, "Trochu" to 10, "Vůbec" to 5))
+    )
+
+    private fun gigachadQuestions(): List<Question> = listOf(
+        Question("Jak moc si věříš?", listOf("Maximálně" to 20, "Hodně" to 15, "Tak napůl" to 10, "Moc ne" to 5)),
+        Question("Pomůžeš kamarádovi, když potřebuje?", listOf("Vždycky" to 20, "Většinou" to 15, "Někdy" to 10, "Nikdy" to 5)),
+        Question("Jak reaguješ na prohru?", listOf("Pogratuluju soupeři" to 20, "Zkusím to znovu" to 15, "Trochu se naštvu" to 10, "Vzdám to" to 5)),
+        Question("Jak moc jsi odvážný?", listOf("Extrémně" to 20, "Hodně" to 15, "Normálně" to 10, "Spíš ne" to 5)),
+        Question("Co uděláš, když tě někdo urazí?", listOf("Zachovám klid" to 20, "Zasměju se" to 15, "Odpovím mu" to 10, "Naštvu se" to 5)),
+        Question("Jak často dodržíš slib?", listOf("Vždycky" to 20, "Skoro vždycky" to 15, "Občas" to 10, "Skoro nikdy" to 5)),
+        Question("Jaký je tvůj GIGACHAD level?", listOf("1000" to 20, "500" to 15, "100" to 10, "0" to 5)),
+        Question("Dokážeš přiznat chybu?", listOf("Bez problémů" to 20, "Většinou ano" to 15, "Nerad" to 10, "Nikdy" to 5)),
+        Question("Jak reaguješ na výzvy?", listOf("Jdu do toho" to 20, "Nejdřív přemýšlím" to 15, "Moc se mi nechce" to 10, "Vzdám to" to 5)),
+        Question("Jak by tě popsali kamarádi?", listOf("GIGACHAD" to 20, "Sigma" to 15, "Normální člověk" to 10, "NPC" to 5))
+    )
+
+    private fun brainrotQuestions(): List<Question> = listOf(
+        Question("Jak často používáš brainrot hlášky?", listOf("Pořád" to 20, "Často" to 15, "Občas" to 10, "Nikdy" to 5)),
+        Question("Znáš význam slova Skibidi?", listOf("Samozřejmě" to 20, "Asi ano" to 15, "Trochu" to 10, "Vůbec" to 5)),
+        Question("Co uděláš, když někdo řekne 67?", listOf("Okamžitě odpovím" to 20, "Začnu se smát" to 15, "Jen se podívám" to 10, "Nevím, co to znamená" to 5)),
+        Question("Jak často sleduješ brainrot videa?", listOf("Každý den" to 20, "Několikrát týdně" to 15, "Občas" to 10, "Nikdy" to 5)),
+        Question("Jak dobře znáš internetové trendy?", listOf("Jsem expert" to 20, "Znám jich hodně" to 15, "Znám pár" to 10, "Vůbec" to 5)),
+        Question("Co znamená „rizz“?", listOf("Umění zaujmout" to 20, "Druh jídla" to 15, "Název hry" to 10, "Nevím" to 5)),
+        Question("Jaký brainrot meme je nejlepší?", listOf("Skibidi" to 20, "67" to 15, "Sigma" to 10, "Jiný" to 5)),
+        Question("Dokážeš mluvit celý den jen v meme hláškách?", listOf("Jasně" to 20, "Několik hodin" to 15, "Chvíli" to 10, "Ne" to 5)),
+        Question("Jak často posíláš brainrot kamarádům?", listOf("Pořád" to 20, "Často" to 15, "Občas" to 10, "Nikdy" to 5)),
+        Question("Jaký máš brainrot level?", listOf("1000" to 20, "500" to 15, "100" to 10, "0" to 5))
+    )
+
+    private fun npcQuestions(): List<Question> = listOf(
+        Question("Jak často děláš pořád to samé?", listOf("Každý den" to 20, "Často" to 15, "Občas" to 10, "Nikdy" to 5)),
+        Question("Co uděláš, když tě někdo pozdraví?", listOf("Pozdravím zpátky" to 20, "Usměju se" to 15, "Jen se podívám" to 10, "Nevím, co dělat" to 5)),
+        Question("Jak často říkáš stejnou větu?", listOf("Pořád" to 20, "Často" to 15, "Občas" to 10, "Nikdy" to 5)),
+        Question("Jak reaguješ na nečekanou situaci?", listOf("Okamžitě ji vyřeším" to 20, "Chvíli přemýšlím" to 15, "Zmatkuju" to 10, "Zamrznu" to 5)),
+        Question("Jaký máš herní NPC level?", listOf("Boss NPC" to 20, "Vedlejší postava" to 15, "Obyčejné NPC" to 10, "Hlavní NPC" to 5)),
+        Question("Jak často se ztratíš ve vlastních myšlenkách?", listOf("Pořád" to 20, "Často" to 15, "Občas" to 10, "Nikdy" to 5)),
+        Question("Dokážeš vymyslet vlastní hlášku?", listOf("Pořád" to 20, "Často" to 15, "Někdy" to 10, "Nikdy" to 5)),
+        Question("Co děláš, když čekáš?", listOf("Vymýšlím něco" to 20, "Kouknu na mobil" to 15, "Jen stojím" to 10, "Zapomenu, na co čekám" to 5)),
+        Question("Jak často se chováš jako postava z hry?", listOf("Pořád" to 20, "Často" to 15, "Občas" to 10, "Nikdy" to 5)),
+        Question("Jaký máš NPC level?", listOf("1000" to 20, "500" to 15, "100" to 10, "0" to 5))
+    )
+
+    private fun sigmaQuestions(): List<Question> = listOf(
+        Question("Jak moc jsi samostatný?", listOf("Maximálně" to 20, "Hodně" to 15, "Tak napůl" to 10, "Vůbec" to 5)),
+        Question("Radši pracuješ sám, nebo v týmu?", listOf("Sám" to 20, "Spíš sám" to 15, "Spíš v týmu" to 10, "V týmu" to 5)),
+        Question("Jak reaguješ na kritiku?", listOf("Vezmu si z ní ponaučení" to 20, "Vyslechnu ji" to 15, "Moc ji neřeším" to 10, "Naštvu se" to 5)),
+        Question("Jak často dodržuješ svoje cíle?", listOf("Vždycky" to 20, "Většinou" to 15, "Občas" to 10, "Nikdy" to 5)),
+        Question("Co uděláš, když tě někdo podcení?", listOf("Ukážu, co umím" to 20, "Neřeším to" to 15, "Zasměju se" to 10, "Naštvu se" to 5)),
+        Question("Jak moc jsi tajemný?", listOf("Extrémně" to 20, "Docela dost" to 15, "Trochu" to 10, "Vůbec" to 5)),
+        Question("Jaký je tvůj Sigma level?", listOf("1000" to 20, "500" to 15, "100" to 10, "0" to 5)),
+        Question("Dokážeš zůstat v klidu pod tlakem?", listOf("Vždycky" to 20, "Většinou" to 15, "Někdy" to 10, "Nikdy" to 5)),
+        Question("Jak často jdeš vlastní cestou?", listOf("Pořád" to 20, "Často" to 15, "Občas" to 10, "Nikdy" to 5)),
+        Question("Co je podle tebe největší Sigma vlastnost?", listOf("Sebevědomí" to 20, "Samostatnost" to 15, "Klid" to 10, "Věrnost kamarádům" to 5))
+    )
+
     private fun startQuestions(name: String) {
         questionType = name
         currentMode = name
@@ -454,6 +519,11 @@ class MainActivity : AppCompatActivity() {
             when (name) {
                 "AURA TEST" -> auraQuestions()
                 "GOONER TEST" -> goonerQuestions()
+                "TROLL TEST" -> trollQuestions()
+                "GIGACHAD TEST" -> gigachadQuestions()
+                "BRAINROT TEST" -> brainrotQuestions()
+                "NPC TEST" -> npcQuestions()
+                "SIGMA TEST" -> sigmaQuestions()
                 else -> downQuestions()
             }
         ).shuffled()
@@ -560,6 +630,7 @@ class MainActivity : AppCompatActivity() {
         when (questionType) {
             "AURA TEST" -> showAuraResult(score)
             "GOONER TEST" -> showGoonerResult(score)
+            "TROLL TEST", "GIGACHAD TEST", "BRAINROT TEST", "NPC TEST", "SIGMA TEST" -> showPremiumModeResult(score)
             else -> showDownResult(score)
         }
     }
@@ -613,6 +684,28 @@ class MainActivity : AppCompatActivity() {
         page.addView(againButton, params())
         page.addView(menuButton, params())
         againButton.setOnClickListener { startQuestions("GOONER TEST") }
+        menuButton.setOnClickListener { showMenu() }
+        setContentView(page)
+    }
+
+    private fun showPremiumModeResult(score: Int) {
+        val percentage = (score / 2).coerceIn(0, 100)
+        val page = root()
+        history.add("$questionType: $percentage %")
+        page.addView(label("✨ $questionType", 30f, purple, true), params())
+        page.addView(label("$percentage %", 42f, gold, true), params())
+        val description = when {
+            percentage >= 90 -> "Absolutní legenda! 🔥"
+            percentage >= 70 -> "Skvělý výsledek! 😎"
+            percentage >= 50 -> "Docela dobrý výsledek!"
+            else -> "Ještě máš co zlepšovat! 💀"
+        }
+        page.addView(label(description, 20f, white, true), params())
+        val againButton = makeButton("🔄 ZKUSIT ZNOVU")
+        val menuButton = makeButton("🏠 HLAVNÍ MENU")
+        page.addView(againButton, params())
+        page.addView(menuButton, params())
+        againButton.setOnClickListener { startQuestions(questionType) }
         menuButton.setOnClickListener { showMenu() }
         setContentView(page)
     }
