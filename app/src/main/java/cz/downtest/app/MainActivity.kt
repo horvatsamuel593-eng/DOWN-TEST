@@ -542,26 +542,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun footballIqQuestions(): List<Question> = listOf(
-        Question("1/5 – POZNEJ KLUB PODLE ZNAKU (v aplikaci bude znak bez názvu): Metalist 1925 Charkov", listOf("Metalist 1925 Charkov" to 1, "FK Jablonec" to 0, "FC Argeș" to 0, "Zimbru Kišiněv" to 0)),
-        Question("2/5 – POZNEJ KLUB PODLE ZNAKU (v aplikaci bude znak bez názvu): SV Elversberg", listOf("FC Saarbrücken" to 0, "SV Elversberg" to 1, "Wehen Wiesbaden" to 0, "Jahn Regensburg" to 0)),
-        Question("3/5 – POZNEJ KLUB PODLE ZNAKU (v aplikaci bude znak bez názvu): Dunfermline Athletic", listOf("Raith Rovers" to 0, "Dunfermline Athletic" to 1, "Greenock Morton" to 0, "Ayr United" to 0)),
-        Question("4/5 – POZNEJ KLUB PODLE ZNAKU (v aplikaci bude znak bez názvu): FC Botoșani", listOf("FC Voluntari" to 0, "FC Botoșani" to 1, "Petrolul Ploiești" to 0, "UTA Arad" to 0)),
-        Question("5/5 – POZNEJ KLUB PODLE ZNAKU (v aplikaci bude znak bez názvu): FC Vaduz", listOf("FC Vaduz" to 1, "FC Lugano" to 0, "FC Winterthur" to 0, "FC Sion" to 0)),
+        Question("1/5 – POZNEJ KLUB PODLE ZNAKU (obrázek klubového znaku bez nápisu – bude doplněn)", listOf("Metalist 1925 Charkov" to 1, "FK Jablonec" to 0, "FC Argeș" to 0, "Zimbru Kišiněv" to 0)),
+        Question("2/5 – POZNEJ KLUB PODLE ZNAKU (obrázek klubového znaku bez nápisu – bude doplněn)", listOf("FC Saarbrücken" to 0, "SV Elversberg" to 1, "Wehen Wiesbaden" to 0, "Jahn Regensburg" to 0)),
+        Question("3/5 – POZNEJ KLUB PODLE ZNAKU (obrázek klubového znaku bez nápisu – bude doplněn)", listOf("Raith Rovers" to 0, "Dunfermline Athletic" to 1, "Greenock Morton" to 0, "Ayr United" to 0)),
+        Question("4/5 – POZNEJ KLUB PODLE ZNAKU (obrázek klubového znaku bez nápisu – bude doplněn)", listOf("FC Voluntari" to 0, "FC Botoșani" to 1, "Petrolul Ploiești" to 0, "UTA Arad" to 0)),
+        Question("5/5 – POZNEJ KLUB PODLE ZNAKU (obrázek klubového znaku bez nápisu – bude doplněn)", listOf("FC Vaduz" to 1, "FC Lugano" to 0, "FC Winterthur" to 0, "FC Sion" to 0)),
         Question("6. Který klub vyhrál první ročník Poháru mistrů evropských zemí v roce 1956?", listOf("AC Milan" to 0, "Real Madrid" to 1, "Benfica" to 0, "Stade de Reims" to 0)),
         Question("7. Kdo vstřelil hattrick ve finále MS 1966?", listOf("Bobby Charlton" to 0, "Geoff Hurst" to 1, "Pelé" to 0, "Eusébio" to 0)),
         Question("8. Která země vyhrála EURO 1992, přestože se původně nekvalifikovala?", listOf("Švédsko" to 0, "Nizozemsko" to 0, "Dánsko" to 1, "Skotsko" to 0)),
         Question("9. Který klub porazil Barcelonu 4:0 ve finále Ligy mistrů 1994?", listOf("Juventus" to 0, "AC Milan" to 1, "Ajax" to 0, "Manchester United" to 0)),
         Question("10. Kdo získal Zlatý míč v roce 1995?", listOf("George Weah" to 1, "Ronaldo" to 0, "Jürgen Klinsmann" to 0, "Alan Shearer" to 0)),
-        Question("11/15 – POZNEJ STADION: Signal Iduna Park", listOf("Allianz Arena" to 0, "Signal Iduna Park" to 1, "Veltins-Arena" to 0, "Olympiastadion Berlin" to 0)),
-        Question("12/15 – POZNEJ STADION: Estadio Azteca", listOf("Maracanã" to 0, "Estadio Azteca" to 1, "Monumental" to 0, "Wembley" to 0)),
-        Question("13/15 – POZNEJ STADION: Anfield", listOf("Anfield" to 1, "Stamford Bridge" to 0, "Emirates Stadium" to 0, "Old Trafford" to 0)),
-        Question("14/15 – POZNEJ STADION: San Siro", listOf("Stadio Olimpico" to 0, "San Siro" to 1, "Allianz Stadium" to 0, "Diego Armando Maradona Stadium" to 0)),
-        Question("15/15 – POZNEJ STADION: Estádio da Luz", listOf("Estádio do Dragão" to 0, "José Alvalade" to 0, "Estádio da Luz" to 1, "Santiago Bernabéu" to 0)),
-        Question("16/20 – POZNEJ HRÁČE: Andrea Pirlo", listOf("Andrea Pirlo" to 1, "Xabi Alonso" to 0, "Gennaro Gattuso" to 0, "Andrea Barzagli" to 0)),
-        Question("17/20 – POZNEJ HRÁČE: Samuel Eto'o", listOf("Didier Drogba" to 0, "Samuel Eto'o" to 1, "Emmanuel Adebayor" to 0, "Nicolas Anelka" to 0)),
-        Question("18/20 – POZNEJ HRÁČE: Dennis Bergkamp", listOf("Thierry Henry" to 0, "Dennis Bergkamp" to 1, "Robin van Persie" to 0, "Patrick Vieira" to 0)),
-        Question("19/20 – POZNEJ HRÁČE: Clarence Seedorf", listOf("Edgar Davids" to 0, "Clarence Seedorf" to 1, "Patrick Vieira" to 0, "Claude Makélélé" to 0)),
-        Question("20/20 – POZNEJ HRÁČE: Sergio Agüero", listOf("Carlos Tevez" to 0, "Sergio Agüero" to 1, "Gonzalo Higuaín" to 0, "Radamel Falcao" to 0))
+        Question("11/15 – POZNEJ STADION – fotografie bude doplněna", listOf("Allianz Arena" to 0, "Signal Iduna Park" to 1, "Veltins-Arena" to 0, "Olympiastadion Berlin" to 0)),
+        Question("12/15 – POZNEJ STADION – fotografie bude doplněna", listOf("Maracanã" to 0, "Estadio Azteca" to 1, "Monumental" to 0, "Wembley" to 0)),
+        Question("13/15 – POZNEJ STADION – fotografie bude doplněna", listOf("Anfield" to 1, "Stamford Bridge" to 0, "Emirates Stadium" to 0, "Old Trafford" to 0)),
+        Question("14/15 – POZNEJ STADION – fotografie bude doplněna", listOf("Stadio Olimpico" to 0, "San Siro" to 1, "Allianz Stadium" to 0, "Diego Armando Maradona Stadium" to 0)),
+        Question("15/15 – POZNEJ STADION – fotografie bude doplněna", listOf("Estádio do Dragão" to 0, "José Alvalade" to 0, "Estádio da Luz" to 1, "Santiago Bernabéu" to 0)),
+        Question("16/20 – POZNEJ HRÁČE – fotografie bude doplněna", listOf("Andrea Pirlo" to 1, "Xabi Alonso" to 0, "Gennaro Gattuso" to 0, "Andrea Barzagli" to 0)),
+        Question("17/20 – POZNEJ HRÁČE – fotografie bude doplněna", listOf("Didier Drogba" to 0, "Samuel Eto'o" to 1, "Emmanuel Adebayor" to 0, "Nicolas Anelka" to 0)),
+        Question("18/20 – POZNEJ HRÁČE – fotografie bude doplněna", listOf("Thierry Henry" to 0, "Dennis Bergkamp" to 1, "Robin van Persie" to 0, "Patrick Vieira" to 0)),
+        Question("19/20 – POZNEJ HRÁČE – fotografie bude doplněna", listOf("Edgar Davids" to 0, "Clarence Seedorf" to 1, "Patrick Vieira" to 0, "Claude Makélélé" to 0)),
+        Question("20/20 – POZNEJ HRÁČE – fotografie bude doplněna", listOf("Carlos Tevez" to 0, "Sergio Agüero" to 1, "Gonzalo Higuaín" to 0, "Radamel Falcao" to 0))
     )
 
     private fun startQuestions(name: String) {
