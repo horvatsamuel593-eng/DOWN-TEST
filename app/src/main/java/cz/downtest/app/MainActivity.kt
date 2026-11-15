@@ -63,7 +63,8 @@ class MainActivity : AppCompatActivity() {
         GameMode("GIGACHAD TEST", "🗿", true),
         GameMode("BRAINROT TEST", "🧠", true),
         GameMode("NPC TEST", "🤖", true),
-        GameMode("SIGMA TEST", "🐺", true)
+        GameMode("SIGMA TEST", "🐺", true),
+        GameMode("FOOTBALL PASS", "⚽", true)
     )
 
     private val cameraPermission =
@@ -163,7 +164,9 @@ class MainActivity : AppCompatActivity() {
             list.addView(button, params())
 
             button.setOnClickListener {
-                if (mode.premium) {
+                if (mode.name == "FOOTBALL PASS") {
+                    showFootballPassScreen()
+                } else if (mode.premium) {
                     AlertDialog.Builder(this)
                         .setTitle("🔒 PREMIUM")
                         .setMessage("Tento režim je zatím zamčený.")
@@ -509,6 +512,58 @@ class MainActivity : AppCompatActivity() {
         Question("Co je podle tebe největší Sigma vlastnost?", listOf("Sebevědomí" to 20, "Samostatnost" to 15, "Klid" to 10, "Věrnost kamarádům" to 5))
     )
 
+
+    private fun showFootballPassScreen() {
+        val page = root()
+        page.addView(label("⚽ FOOTBALL PASS", 30f, gold, true), params())
+        page.addView(label("4 fotbalové testy • cena plánovaného passu 30 Kč", 16f, white), params())
+        page.addView(label("Nákup zatím není aktivní. FOOTBALL IQ TEST si můžeš zatím vyzkoušet v náhledovém režimu.", 15f, white), params())
+
+        val iqButton = makeButton("⚽ FOOTBALL IQ TEST – NÁHLED")
+        val barcaButton = makeButton("❤️💙 BARÇA FAN TEST 🔒")
+        val madridButton = makeButton("🤍 MADRID TEST 🔒")
+        val czechButton = makeButton("🇨🇿 CZECH FOOTBALL IQ 🔒")
+        val backButton = makeButton("⬅ ZPĚT")
+
+        page.addView(iqButton, params())
+        page.addView(barcaButton, params())
+        page.addView(madridButton, params())
+        page.addView(czechButton, params())
+        page.addView(backButton, params())
+
+        iqButton.setOnClickListener { startQuestions("FOOTBALL IQ TEST") }
+        listOf(barcaButton, madridButton, czechButton).forEach { button ->
+            button.setOnClickListener {
+                Toast.makeText(this, "Tento test bude doplněn později.", Toast.LENGTH_SHORT).show()
+            }
+        }
+        backButton.setOnClickListener { showMenu() }
+        setContentView(page)
+    }
+
+    private fun footballIqQuestions(): List<Question> = listOf(
+        Question("1/5 – POZNEJ KLUB PODLE ZNAKU (v aplikaci bude znak bez názvu): Metalist 1925 Charkov", listOf("Metalist 1925 Charkov" to 1, "FK Jablonec" to 0, "FC Argeș" to 0, "Zimbru Kišiněv" to 0)),
+        Question("2/5 – POZNEJ KLUB PODLE ZNAKU (v aplikaci bude znak bez názvu): SV Elversberg", listOf("FC Saarbrücken" to 0, "SV Elversberg" to 1, "Wehen Wiesbaden" to 0, "Jahn Regensburg" to 0)),
+        Question("3/5 – POZNEJ KLUB PODLE ZNAKU (v aplikaci bude znak bez názvu): Dunfermline Athletic", listOf("Raith Rovers" to 0, "Dunfermline Athletic" to 1, "Greenock Morton" to 0, "Ayr United" to 0)),
+        Question("4/5 – POZNEJ KLUB PODLE ZNAKU (v aplikaci bude znak bez názvu): FC Botoșani", listOf("FC Voluntari" to 0, "FC Botoșani" to 1, "Petrolul Ploiești" to 0, "UTA Arad" to 0)),
+        Question("5/5 – POZNEJ KLUB PODLE ZNAKU (v aplikaci bude znak bez názvu): FC Vaduz", listOf("FC Vaduz" to 1, "FC Lugano" to 0, "FC Winterthur" to 0, "FC Sion" to 0)),
+        Question("6. Který klub vyhrál první ročník Poháru mistrů evropských zemí v roce 1956?", listOf("AC Milan" to 0, "Real Madrid" to 1, "Benfica" to 0, "Stade de Reims" to 0)),
+        Question("7. Kdo vstřelil hattrick ve finále MS 1966?", listOf("Bobby Charlton" to 0, "Geoff Hurst" to 1, "Pelé" to 0, "Eusébio" to 0)),
+        Question("8. Která země vyhrála EURO 1992, přestože se původně nekvalifikovala?", listOf("Švédsko" to 0, "Nizozemsko" to 0, "Dánsko" to 1, "Skotsko" to 0)),
+        Question("9. Který klub porazil Barcelonu 4:0 ve finále Ligy mistrů 1994?", listOf("Juventus" to 0, "AC Milan" to 1, "Ajax" to 0, "Manchester United" to 0)),
+        Question("10. Kdo získal Zlatý míč v roce 1995?", listOf("George Weah" to 1, "Ronaldo" to 0, "Jürgen Klinsmann" to 0, "Alan Shearer" to 0)),
+        Question("11/15 – POZNEJ STADION: Signal Iduna Park", listOf("Allianz Arena" to 0, "Signal Iduna Park" to 1, "Veltins-Arena" to 0, "Olympiastadion Berlin" to 0)),
+        Question("12/15 – POZNEJ STADION: Estadio Azteca", listOf("Maracanã" to 0, "Estadio Azteca" to 1, "Monumental" to 0, "Wembley" to 0)),
+        Question("13/15 – POZNEJ STADION: Anfield", listOf("Anfield" to 1, "Stamford Bridge" to 0, "Emirates Stadium" to 0, "Old Trafford" to 0)),
+        Question("14/15 – POZNEJ STADION: San Siro", listOf("Stadio Olimpico" to 0, "San Siro" to 1, "Allianz Stadium" to 0, "Diego Armando Maradona Stadium" to 0)),
+        Question("15/15 – POZNEJ STADION: Estádio da Luz", listOf("Estádio do Dragão" to 0, "José Alvalade" to 0, "Estádio da Luz" to 1, "Santiago Bernabéu" to 0)),
+        Question("16/20 – POZNEJ HRÁČE: Andrea Pirlo", listOf("Andrea Pirlo" to 1, "Xabi Alonso" to 0, "Gennaro Gattuso" to 0, "Andrea Barzagli" to 0)),
+        Question("17/20 – POZNEJ HRÁČE: Samuel Eto'o", listOf("Didier Drogba" to 0, "Samuel Eto'o" to 1, "Emmanuel Adebayor" to 0, "Nicolas Anelka" to 0)),
+        Question("18/20 – POZNEJ HRÁČE: Dennis Bergkamp", listOf("Thierry Henry" to 0, "Dennis Bergkamp" to 1, "Robin van Persie" to 0, "Patrick Vieira" to 0)),
+        Question("19/20 – POZNEJ HRÁČE: Clarence Seedorf", listOf("Edgar Davids" to 0, "Clarence Seedorf" to 1, "Patrick Vieira" to 0, "Claude Makélélé" to 0)),
+        Question("20/20 – POZNEJ HRÁČE: Sergio Agüero", listOf("Carlos Tevez" to 0, "Sergio Agüero" to 1, "Gonzalo Higuaín" to 0, "Radamel Falcao" to 0))
+    )
+
     private fun startQuestions(name: String) {
         questionType = name
         currentMode = name
@@ -524,6 +579,7 @@ class MainActivity : AppCompatActivity() {
                 "BRAINROT TEST" -> brainrotQuestions()
                 "NPC TEST" -> npcQuestions()
                 "SIGMA TEST" -> sigmaQuestions()
+                "FOOTBALL IQ TEST" -> footballIqQuestions()
                 else -> downQuestions()
             }
         ).shuffled()
@@ -631,6 +687,7 @@ class MainActivity : AppCompatActivity() {
             "AURA TEST" -> showAuraResult(score)
             "GOONER TEST" -> showGoonerResult(score)
             "TROLL TEST", "GIGACHAD TEST", "BRAINROT TEST", "NPC TEST", "SIGMA TEST" -> showPremiumModeResult(score)
+            "FOOTBALL IQ TEST" -> showFootballIqResult(score)
             else -> showDownResult(score)
         }
     }
@@ -685,6 +742,32 @@ class MainActivity : AppCompatActivity() {
         page.addView(menuButton, params())
         againButton.setOnClickListener { startQuestions("GOONER TEST") }
         menuButton.setOnClickListener { showMenu() }
+        setContentView(page)
+    }
+
+
+    private fun showFootballIqResult(score: Int) {
+        val page = root()
+        val percentage = (score * 5).coerceIn(0, 100)
+        history.add("FOOTBALL IQ TEST: $score / 20")
+        page.addView(label("⚽ FOOTBALL IQ TEST", 28f, gold, true), params())
+        page.addView(label("$score / 20 správně", 25f, white, true), params())
+        page.addView(label("$percentage %", 42f, gold, true), params())
+        val rank = when {
+            score >= 18 -> "FOTBALOVÝ GENIUS 🏆"
+            score >= 15 -> "SVĚTOVÁ TŘÍDA 🔥"
+            score >= 11 -> "VELMI DOBRÉ ZNALOSTI ⚽"
+            score >= 7 -> "SOLIDNÍ FANOUŠEK"
+            else -> "JEŠTĚ JE CO STUDOVAT"
+        }
+        page.addView(label(rank, 20f, white, true), params())
+        page.addView(label("Toto je zatím náhledová verze bez skutečných obrázků a nákupu passu.", 14f, white), params())
+        val againButton = makeButton("🔄 ZKUSIT ZNOVU")
+        val passButton = makeButton("⬅ ZPĚT NA FOOTBALL PASS")
+        page.addView(againButton, params())
+        page.addView(passButton, params())
+        againButton.setOnClickListener { startQuestions("FOOTBALL IQ TEST") }
+        passButton.setOnClickListener { showFootballPassScreen() }
         setContentView(page)
     }
 
