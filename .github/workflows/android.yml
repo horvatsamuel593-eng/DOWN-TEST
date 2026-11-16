@@ -125,14 +125,21 @@ jobs:
 
           tag = match.group(0)
 
-          # Add network permission for the football quiz images.
-if 'android.permission.INTERNET' not in content:
-    content = content.replace('<application', '<uses-permission android:name="android.permission.INTERNET" />\\n    <application', 1)
+                    # Add network permission for the football quiz images.
+          if 'android.permission.INTERNET' not in content:
+              content = content.replace(
+                  '<application',
+                  '<uses-permission android:name="android.permission.INTERNET" />\\n    <application',
+                  1
+              )
 
-match = re.search(r"<application\\b[^>]*>", content, re.S)
-tag = match.group(0)
+          match = re.search(r"<application\\b[^>]*>", content, re.S)
+          if not match:
+              raise SystemExit("Application tag not found after adding permission!")
 
-for attribute in ("icon", "roundIcon"):
+          tag = match.group(0)
+
+          for attribute in ("icon", "roundIcon"):
               pattern = r'\s+android:' + attribute + r'="[^"]*"'
               replacement = ' android:' + attribute + '="@mipmap/ic_launcher"'
 
