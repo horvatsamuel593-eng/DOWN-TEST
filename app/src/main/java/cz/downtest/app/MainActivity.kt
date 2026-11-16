@@ -54,6 +54,7 @@ class MainActivity : AppCompatActivity() {
     private var questionIndex = 0
     private var randomizedQuestions = listOf<Question>()
     private val selectedAnswers = mutableMapOf<Int, Int>()
+    private var footballLives = 3
 
     private var tts: TextToSpeech? = null
 
@@ -581,6 +582,7 @@ class MainActivity : AppCompatActivity() {
         currentMode = name
         questionIndex = 0
         selectedAnswers.clear()
+        if (name == "FOOTBALL IQ TEST") footballLives = 3
 
         randomizedQuestions = (
             when (name) {
@@ -616,6 +618,12 @@ class MainActivity : AppCompatActivity() {
             label("Otázka ${questionIndex + 1} / ${randomizedQuestions.size}", 16f, gold, true),
             params()
         )
+        if (isFootball) {
+            page.addView(
+                label("❤️ Životy: $footballLives / 3", 18f, Color.rgb(255, 105, 115), true),
+                params()
+            )
+        }
         page.addView(
             label(question.title, 22f, white, true).apply {
                 setPadding(dp(5), dp(25), dp(5), dp(25))
@@ -666,15 +674,23 @@ class MainActivity : AppCompatActivity() {
                 bottomMargin = dp(7)
             })
             button.setOnClickListener {
-                if (isFootball && selectedAnswers.containsKey(questionIndex)) return@setOnClickListener
-                selectedAnswers[questionIndex] = index
                 if (isFootball) {
                     val isCorrect = answer.second == 1
-                    val lines = if (isCorrect) {
-                        listOf("Ty jseš ale baller!", "Plus tisíc aura!", "Tohle byla čistá paráda!", "Fotbalový mozek zapnutý!", "Absolutní top strop!")
-                    } else {
-                        listOf("Ty jseš ale down!", "Minus tisíc aura!", "Tohle byl vlastní gól do prázdné brány!", "Brácho, tohle nevyšlo!", "VAR tě dneska nezachrání!")
+                    if (!isCorrect) {
+                        footballLives--
+                        val wrongLines = listOf("Ty jseš ale down!", "Minus tisíc aura!", "Tohle byl vlastní gól do prázdné brány!", "Brácho, tohle nevyšlo!", "VAR tě dneska nezachrání!")
+                        tts?.speak(wrongLines.random(), TextToSpeech.QUEUE_FLUSH, null, "football-answer")
+                        if (footballLives <= 0) {
+                            Toast.makeText(this, "Došly ti životy! Začínáš znovu od první otázky.", Toast.LENGTH_LONG).show()
+                            startQuestions("FOOTBALL IQ TEST")
+                        } else {
+                            selectedAnswers[questionIndex] = index
+                            showQuestion()
+                        }
+                        return@setOnClickListener
                     }
+                    selectedAnswers[questionIndex] = index
+                    val lines = listOf("Ty jseš ale baller!", "Plus tisíc aura!", "Tohle byla čistá paráda!", "Fotbalový mozek zapnutý!", "Absolutní top strop!")
                     tts?.speak(lines.random(), TextToSpeech.QUEUE_FLUSH, null, "football-answer")
                     if (isCorrect) {
                         page.postDelayed({
