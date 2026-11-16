@@ -32,7 +32,8 @@ data class GameMode(
 
 data class Question(
     val title: String,
-    val answers: List<Pair<String, Int>>
+    val answers: List<Pair<String, Int>>,
+    val imageUrl: String? = null
 )
 
 class MainActivity : AppCompatActivity() {
@@ -612,6 +613,39 @@ class MainActivity : AppCompatActivity() {
             },
             params()
         )
+
+        // Obrázky k otázkám se načítají z internetu; síťové načítání běží mimo hlavní UI vlákno.
+        question.imageUrl?.let { imageUrl ->
+            val questionImage = ImageView(this).apply {
+                adjustViewBounds = true
+                scaleType = ImageView.ScaleType.FIT_CENTER
+                setBackgroundColor(Color.rgb(35, 28, 48))
+                contentDescription = "Obrázek k fotbalové otázce"
+            }
+            page.addView(
+                questionImage,
+                LinearLayout.LayoutParams(-1, dp(220)).apply {
+                    bottomMargin = dp(14)
+                }
+            )
+            Thread {
+                try {
+                    val connection = java.net.URL(imageUrl).openConnection()
+                    connection.connectTimeout = 10000
+                    connection.readTimeout = 15000
+                    connection.getInputStream().use { stream ->
+                        val bitmap = android.graphics.BitmapFactory.decodeStream(stream)
+                        if (bitmap != null) runOnUiThread {
+                            questionImage.setImageBitmap(bitmap)
+                        }
+                    }
+                } catch (_: Exception) {
+                    runOnUiThread {
+                        questionImage.setBackgroundColor(Color.rgb(65, 35, 45))
+                    }
+                }
+            }.start()
+        }
 
         question.answers.forEachIndexed { index, answer ->
             val button = makeButton(answer.first)
