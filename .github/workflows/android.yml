@@ -125,6 +125,13 @@ jobs:
 
           tag = match.group(0)
 
+          # Allow football quiz photos to load from Wikimedia Commons.
+          if not re.search(r'<uses-permission\\s+android:name="android.permission.INTERNET"', content):
+              application_start = match.start()
+              content = content[:application_start] + '    <uses-permission android:name="android.permission.INTERNET" />\\n' + content[application_start:]
+              match = re.search(r"<application\\b[^>]*>", content, re.S)
+              tag = match.group(0)
+
           for attribute in ("icon", "roundIcon"):
               pattern = r'\s+android:' + attribute + r'="[^"]*"'
               replacement = ' android:' + attribute + '="@mipmap/ic_launcher"'
