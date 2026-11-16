@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.view.Gravity
 import android.view.View
 import android.widget.Button
@@ -95,6 +96,15 @@ class MainActivity : AppCompatActivity() {
                 tts?.language = java.util.Locale("cs", "CZ")
                 tts?.setPitch(1.12f)
                 tts?.setSpeechRate(1.12f)
+                tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                    override fun onStart(utteranceId: String?) {}
+                    override fun onError(utteranceId: String?) {}
+                    override fun onDone(utteranceId: String?) {
+                        if (utteranceId == "football-correct") {
+                            handler.post { advanceFootballQuestion() }
+                        }
+                    }
+                })
             }
         }
         showMenu()
@@ -672,6 +682,9 @@ class MainActivity : AppCompatActivity() {
             })
             button.setOnClickListener {
                 if (isFootball) {
+                    if (selectedAnswers[questionIndex]?.let { randomizedQuestions[questionIndex].answers[it].second == 1 } == true) {
+                        return@setOnClickListener
+                    }
                     val isCorrect = answer.second == 1
                     if (!isCorrect) {
                         footballLives--
@@ -687,28 +700,13 @@ class MainActivity : AppCompatActivity() {
                         return@setOnClickListener
                     }
                     selectedAnswers[questionIndex] = index
+                    button.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.rgb(48, 190, 105))
+                    showQuestion()
                     val lines = listOf("Ty jseš ale baller!", "Plus tisíc aura!", "Tohle byla čistá paráda!", "Fotbalový mozek zapnutý!", "Absolutní top strop!")
-                    tts?.speak(lines.random(), TextToSpeech.QUEUE_FLUSH, null, "football-answer")
-                    if (isCorrect) {
-                        page.postDelayed({
-                            if (questionIndex < randomizedQuestions.lastIndex) {
-                                questionIndex++
-                                showQuestionWithSlide(page)
-                            } else {
-                                finishQuestions()
-                            }
-                        }, 650)
-                    } else if (footballLives <= 0) {
-                        page.postDelayed({
-                            AlertDialog.Builder(this)
-                                .setTitle("💔 VŠECHNY ŽIVOTY PRYČ!")
-                                .setMessage("Došly ti 3 životy. FOOTBALL IQ TEST začíná znovu!")
-                                .setCancelable(false)
-                                .setPositiveButton("🔄 HRÁT ZNOVU") { _, _ -> startQuestions("FOOTBALL IQ TEST") }
-                                .show()
-                        }, 450)
-                    } else {
-                        page.postDelayed({ showQuestion() }, 450)
+                    val spoken = lines.random()
+                    val result = tts?.speak(spoken, TextToSpeech.QUEUE_FLUSH, null, "football-correct")
+                    if (result == null || result == TextToSpeech.ERROR) {
+                        handler.postDelayed({ advanceFootballQuestion() }, 1800)
                     }
                 } else {
                     selectedAnswers[questionIndex] = index
@@ -746,6 +744,15 @@ class MainActivity : AppCompatActivity() {
             setContentView(scroll)
         } else {
             setContentView(page)
+        }
+    }
+
+    private fun advanceFootballQuestion() {
+        if (questionIndex < randomizedQuestions.lastIndex) {
+            questionIndex++
+            showQuestionWithSlide(findViewById(android.R.id.content))
+        } else {
+            finishQuestions()
         }
     }
 
