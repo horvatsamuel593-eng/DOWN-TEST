@@ -55,7 +55,6 @@ class MainActivity : AppCompatActivity() {
     private var footballLives = 3
     private var randomizedQuestions = listOf<Question>()
     private val selectedAnswers = mutableMapOf<Int, Int>()
-    private var footballLives = 3
 
     private var tts: TextToSpeech? = null
 
@@ -584,7 +583,6 @@ class MainActivity : AppCompatActivity() {
         questionIndex = 0
         footballLives = 3
         selectedAnswers.clear()
-        if (name == "FOOTBALL IQ TEST") footballLives = 3
 
         randomizedQuestions = (
             when (name) {
@@ -622,12 +620,6 @@ class MainActivity : AppCompatActivity() {
         )
         if (isFootball) {
             page.addView(label("❤️ ŽIVOTY: $footballLives / 3", 18f, if (footballLives == 1) Color.rgb(255, 110, 110) else gold, true), params())
-        }
-        if (isFootball) {
-            page.addView(
-                label("❤️ Životy: $footballLives / 3", 18f, Color.rgb(255, 105, 115), true),
-                params()
-            )
         }
         page.addView(
             label(question.title, 22f, white, true).apply {
