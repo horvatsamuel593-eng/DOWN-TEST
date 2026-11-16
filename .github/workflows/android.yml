@@ -119,23 +119,17 @@ jobs:
           with open(manifest, encoding="utf-8") as f:
               content = f.read()
 
-          match = re.search(r"<application\b[^>]*>", content, re.S)
-          if not match:
-              raise SystemExit("Application tag not found!")
-
-          tag = match.group(0)
-
-                    # Add network permission for the football quiz images.
+          # Add network permission for the football quiz images.
           if 'android.permission.INTERNET' not in content:
               content = content.replace(
                   '<application',
-                  '<uses-permission android:name="android.permission.INTERNET" />\\n    <application',
+                  '<uses-permission android:name="android.permission.INTERNET" />\n    <application',
                   1
               )
 
-          match = re.search(r"<application\\b[^>]*>", content, re.S)
+          match = re.search(r"<application\b[^>]*>", content, re.S)
           if not match:
-              raise SystemExit("Application tag not found after adding permission!")
+              raise SystemExit("Application tag not found!")
 
           tag = match.group(0)
 
