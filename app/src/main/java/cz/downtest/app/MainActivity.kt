@@ -92,6 +92,8 @@ class MainActivity : AppCompatActivity() {
         tts = TextToSpeech(this) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 tts?.language = java.util.Locale("cs", "CZ")
+                tts?.setPitch(1.12f)
+                tts?.setSpeechRate(1.12f)
             }
         }
         showMenu()
@@ -599,23 +601,21 @@ class MainActivity : AppCompatActivity() {
 
     private fun showQuestion() {
         val question = randomizedQuestions[questionIndex]
+        val isFootball = questionType == "FOOTBALL IQ TEST"
         val page = root()
 
-        page.addView(
-            label("💀 $questionType – OTÁZKY", 25f, purple, true),
-            params()
-        )
+        if (isFootball) {
+            page.setBackgroundColor(Color.rgb(48, 51, 57))
+        }
 
         page.addView(
-            label(
-                "Otázka ${questionIndex + 1} / ${randomizedQuestions.size}",
-                16f,
-                gold,
-                true
-            ),
+            label(if (isFootball) "⚽ FOOTBALL PASS" else "💀 $questionType – OTÁZKY", 25f, if (isFootball) white else purple, true),
             params()
         )
-
+        page.addView(
+            label("Otázka ${questionIndex + 1} / ${randomizedQuestions.size}", 16f, gold, true),
+            params()
+        )
         page.addView(
             label(question.title, 22f, white, true).apply {
                 setPadding(dp(5), dp(25), dp(5), dp(25))
@@ -623,20 +623,16 @@ class MainActivity : AppCompatActivity() {
             params()
         )
 
-        // Obrázky k otázkám se načítají z internetu; síťové načítání běží mimo hlavní UI vlákno.
         question.imageUrl?.let { imageUrl ->
             val questionImage = ImageView(this).apply {
                 adjustViewBounds = true
                 scaleType = ImageView.ScaleType.FIT_CENTER
-                setBackgroundColor(Color.rgb(35, 28, 48))
+                setBackgroundColor(Color.rgb(65, 68, 74))
                 contentDescription = "Obrázek k fotbalové otázce"
             }
-            page.addView(
-                questionImage,
-                LinearLayout.LayoutParams(-1, dp(220)).apply {
-                    bottomMargin = dp(14)
-                }
-            )
+            page.addView(questionImage, LinearLayout.LayoutParams(-1, dp(220)).apply {
+                bottomMargin = dp(14)
+            })
             Thread {
                 try {
                     val connection = java.net.URL(imageUrl).openConnection()
@@ -644,37 +640,35 @@ class MainActivity : AppCompatActivity() {
                     connection.readTimeout = 15000
                     connection.getInputStream().use { stream ->
                         val bitmap = android.graphics.BitmapFactory.decodeStream(stream)
-                        if (bitmap != null) runOnUiThread {
-                            questionImage.setImageBitmap(bitmap)
-                        }
+                        if (bitmap != null) runOnUiThread { questionImage.setImageBitmap(bitmap) }
                     }
                 } catch (_: Exception) {
-                    runOnUiThread {
-                        questionImage.setBackgroundColor(Color.rgb(65, 35, 45))
-                    }
+                    runOnUiThread { questionImage.setBackgroundColor(Color.rgb(80, 55, 58)) }
                 }
             }.start()
         }
 
         question.answers.forEachIndexed { index, answer ->
             val button = makeButton(answer.first)
-
-            if (selectedAnswers[questionIndex] == index) {
-                button.backgroundTintList =
-                    android.content.res.ColorStateList.valueOf(gold)
+            if (isFootball) {
+                button.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.rgb(82, 86, 94))
             }
-
-            page.addView(
-                button,
-                LinearLayout.LayoutParams(-1, dp(58)).apply {
-                    topMargin = dp(7)
-                    bottomMargin = dp(7)
-                }
-            )
-
+            if (selectedAnswers[questionIndex] == index) {
+                val selectedIsCorrect = answer.second == 1
+                button.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                    if (isFootball && !selectedIsCorrect) Color.rgb(205, 48, 55)
+                    else if (isFootball) Color.rgb(48, 145, 92)
+                    else gold
+                )
+            }
+            page.addView(button, LinearLayout.LayoutParams(-1, dp(58)).apply {
+                topMargin = dp(7)
+                bottomMargin = dp(7)
+            })
             button.setOnClickListener {
+                if (isFootball && selectedAnswers.containsKey(questionIndex)) return@setOnClickListener
                 selectedAnswers[questionIndex] = index
-                if (questionType == "FOOTBALL IQ TEST") {
+                if (isFootball) {
                     val isCorrect = answer.second == 1
                     val lines = if (isCorrect) {
                         listOf("Ty jseš ale baller!", "Plus tisíc aura!", "Tohle byla čistá paráda!", "Fotbalový mozek zapnutý!", "Absolutní top strop!")
@@ -682,60 +676,64 @@ class MainActivity : AppCompatActivity() {
                         listOf("Ty jseš ale down!", "Minus tisíc aura!", "Tohle byl vlastní gól do prázdné brány!", "Brácho, tohle nevyšlo!", "VAR tě dneska nezachrání!")
                     }
                     tts?.speak(lines.random(), TextToSpeech.QUEUE_FLUSH, null, "football-answer")
+                    if (isCorrect) {
+                        page.postDelayed({
+                            if (questionIndex < randomizedQuestions.lastIndex) {
+                                questionIndex++
+                                showQuestionWithSlide(page)
+                            } else {
+                                finishQuestions()
+                            }
+                        }, 650)
+                    } else {
+                        showQuestion()
+                    }
+                } else {
+                    showQuestion()
                 }
-                showQuestion()
             }
         }
 
-        val backButton = makeButton("⬅ ZPĚT")
-        val nextButton = makeButton(
-            if (questionIndex == randomizedQuestions.lastIndex) {
-                "VYHODNOTIT TEST"
-            } else {
-                "DALŠÍ ➜"
+        if (!isFootball) {
+            val backButton = makeButton("⬅ ZPĚT")
+            val nextButton = makeButton(if (questionIndex == randomizedQuestions.lastIndex) "VYHODNOTIT TEST" else "DALŠÍ ➜")
+            page.addView(backButton, params())
+            page.addView(nextButton, params())
+            backButton.setOnClickListener {
+                if (questionIndex > 0) { questionIndex--; showQuestion() }
+                else showTestChoice(questionType)
             }
-        )
-
-        page.addView(backButton, params())
-        page.addView(nextButton, params())
-
-        backButton.setOnClickListener {
-            if (questionIndex > 0) {
-                questionIndex--
-                showQuestion()
-            } else {
-                showTestChoice(questionType)
+            nextButton.setOnClickListener {
+                if (!selectedAnswers.containsKey(questionIndex)) {
+                    Toast.makeText(this, "Nejdřív vyber odpověď!", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                if (questionIndex < randomizedQuestions.lastIndex) { questionIndex++; showQuestion() }
+                else finishQuestions()
             }
         }
 
-        nextButton.setOnClickListener {
-            if (!selectedAnswers.containsKey(questionIndex)) {
-                Toast.makeText(
-                    this,
-                    "Nejdřív vyber odpověď!",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
-
-            if (questionIndex < randomizedQuestions.lastIndex) {
-                questionIndex++
-                showQuestion()
-            } else {
-                finishQuestions()
-            }
-        }
-
-        if (questionType == "FOOTBALL IQ TEST") {
+        if (isFootball) {
             val scroll = ScrollView(this).apply {
                 isFillViewport = true
                 isSmoothScrollingEnabled = true
+                setBackgroundColor(Color.rgb(48, 51, 57))
                 addView(page)
             }
             setContentView(scroll)
         } else {
             setContentView(page)
         }
+    }
+
+    private fun showQuestionWithSlide(oldPage: View) {
+        showQuestion()
+        val newPage = findViewById<View>(android.R.id.content).getChildAt(0)
+        newPage.translationX = resources.displayMetrics.widthPixels.toFloat()
+        newPage.animate()
+            .translationX(0f)
+            .setDuration(320)
+            .start()
     }
 
     private fun finishQuestions() {
