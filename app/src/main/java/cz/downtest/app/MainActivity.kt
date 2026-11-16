@@ -52,6 +52,7 @@ class MainActivity : AppCompatActivity() {
     private var currentMode = "DOWN TEST"
     private var questionType = "DOWN TEST"
     private var questionIndex = 0
+    private var footballLives = 3
     private var randomizedQuestions = listOf<Question>()
     private val selectedAnswers = mutableMapOf<Int, Int>()
     private var footballLives = 3
@@ -581,6 +582,7 @@ class MainActivity : AppCompatActivity() {
         questionType = name
         currentMode = name
         questionIndex = 0
+        footballLives = 3
         selectedAnswers.clear()
         if (name == "FOOTBALL IQ TEST") footballLives = 3
 
@@ -618,6 +620,9 @@ class MainActivity : AppCompatActivity() {
             label("Otázka ${questionIndex + 1} / ${randomizedQuestions.size}", 16f, gold, true),
             params()
         )
+        if (isFootball) {
+            page.addView(label("❤️ ŽIVOTY: $footballLives / 3", 18f, if (footballLives == 1) Color.rgb(255, 110, 110) else gold, true), params())
+        }
         if (isFootball) {
             page.addView(
                 label("❤️ Životy: $footballLives / 3", 18f, Color.rgb(255, 105, 115), true),
@@ -701,10 +706,20 @@ class MainActivity : AppCompatActivity() {
                                 finishQuestions()
                             }
                         }, 650)
+                    } else if (footballLives <= 0) {
+                        page.postDelayed({
+                            AlertDialog.Builder(this)
+                                .setTitle("💔 VŠECHNY ŽIVOTY PRYČ!")
+                                .setMessage("Došly ti 3 životy. FOOTBALL IQ TEST začíná znovu!")
+                                .setCancelable(false)
+                                .setPositiveButton("🔄 HRÁT ZNOVU") { _, _ -> startQuestions("FOOTBALL IQ TEST") }
+                                .show()
+                        }, 450)
                     } else {
-                        showQuestion()
+                        page.postDelayed({ showQuestion() }, 450)
                     }
                 } else {
+                    selectedAnswers[questionIndex] = index
                     showQuestion()
                 }
             }
