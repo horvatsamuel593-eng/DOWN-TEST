@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.speech.tts.TextToSpeech
 import android.view.Gravity
 import android.view.View
 import android.widget.Button
@@ -54,6 +55,8 @@ class MainActivity : AppCompatActivity() {
     private var randomizedQuestions = listOf<Question>()
     private val selectedAnswers = mutableMapOf<Int, Int>()
 
+    private var tts: TextToSpeech? = null
+
     private var cameraProvider: ProcessCameraProvider? = null
     private var previewView: PreviewView? = null
 
@@ -86,6 +89,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        tts = TextToSpeech(this) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                tts?.language = java.util.Locale("cs", "CZ")
+            }
+        }
         showMenu()
     }
 
@@ -666,6 +674,15 @@ class MainActivity : AppCompatActivity() {
 
             button.setOnClickListener {
                 selectedAnswers[questionIndex] = index
+                if (questionType == "FOOTBALL IQ TEST") {
+                    val isCorrect = answer.second == 1
+                    val lines = if (isCorrect) {
+                        listOf("Ty jseš ale baller!", "Plus tisíc aura!", "Tohle byla čistá paráda!", "Fotbalový mozek zapnutý!", "Absolutní top strop!")
+                    } else {
+                        listOf("Ty jseš ale down!", "Minus tisíc aura!", "Tohle byl vlastní gól do prázdné brány!", "Brácho, tohle nevyšlo!", "VAR tě dneska nezachrání!")
+                    }
+                    tts?.speak(lines.random(), TextToSpeech.QUEUE_FLUSH, null, "football-answer")
+                }
                 showQuestion()
             }
         }
@@ -709,7 +726,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        setContentView(page)
+        if (questionType == "FOOTBALL IQ TEST") {
+            val scroll = ScrollView(this).apply {
+                isFillViewport = true
+                isSmoothScrollingEnabled = true
+                addView(page)
+            }
+            setContentView(scroll)
+        } else {
+            setContentView(page)
+        }
     }
 
     private fun finishQuestions() {
@@ -1097,6 +1123,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         stopCamera()
+        tts?.stop()
+        tts?.shutdown()
+        tts = null
         super.onDestroy()
     }
 }
