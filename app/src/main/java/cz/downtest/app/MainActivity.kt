@@ -728,7 +728,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showQuestionWithSlide(oldPage: View) {
         showQuestion()
-        val newPage = findViewById<View>(android.R.id.content).getChildAt(0)
+        val newPage = findViewById<android.view.ViewGroup>(android.R.id.content).getChildAt(0)
         newPage.translationX = resources.displayMetrics.widthPixels.toFloat()
         newPage.animate()
             .translationX(0f)
