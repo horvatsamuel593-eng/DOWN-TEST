@@ -37,7 +37,7 @@ data class GameMode(
 data class Question(
     val title: String,
     val answers: List<Pair<String, Int>>,
-    val imageUrl: String? = null
+    val imageAsset: String? = null
 )
 
 class MainActivity : AppCompatActivity() {
@@ -613,26 +613,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun footballIqQuestions(): List<Question> = listOf(
-        Question("1/5 – POZNEJ KLUB PODLE ZNAKU", listOf("Metalist 1925 Charkov" to 1, "FK Jablonec" to 0, "FC Argeș" to 0, "Zimbru Kišiněv" to 0), imageUrl = "https://commons.wikimedia.org/wiki/Special:FilePath/FC_Metalist_1925_Kharkiv_logo.png"),
-        Question("2/5 – POZNEJ KLUB PODLE ZNAKU", listOf("FC Saarbrücken" to 0, "SV Elversberg" to 1, "Wehen Wiesbaden" to 0, "Jahn Regensburg" to 0), imageUrl = "https://commons.wikimedia.org/wiki/Special:FilePath/SV_Elversberg_logo.webp"),
-        Question("3/5 – POZNEJ KLUB PODLE ZNAKU", listOf("Raith Rovers" to 0, "Dunfermline Athletic" to 1, "Greenock Morton" to 0, "Ayr United" to 0), imageUrl = "https://commons.wikimedia.org/wiki/Special:FilePath/-2019-08-23_Dunfermline_Athletic_F.C._football_Pin_badge.JPG"),
-        Question("4/5 – POZNEJ KLUB PODLE ZNAKU", listOf("FC Voluntari" to 0, "FC Botoșani" to 1, "Petrolul Ploiești" to 0, "UTA Arad" to 0), imageUrl = "https://commons.wikimedia.org/wiki/Special:FilePath/FC_Boto%C8%99ani_logo.png"),
-        Question("5/5 – POZNEJ KLUB PODLE ZNAKU", listOf("FC Vaduz" to 1, "FC Lugano" to 0, "FC Winterthur" to 0, "FC Sion" to 0), imageUrl = "https://commons.wikimedia.org/wiki/Special:FilePath/FCV_Bildmarke_1-Farbig_Rot.png"),
+        Question("1/5 – POZNEJ KLUB PODLE ZNAKU", listOf("Metalist 1925 Charkov" to 1, "FK Jablonec" to 0, "FC Argeș" to 0, "Zimbru Kišiněv" to 0), imageAsset = "metalist_logo"),
+        Question("2/5 – POZNEJ KLUB PODLE ZNAKU", listOf("FC Saarbrücken" to 0, "SV Elversberg" to 1, "Wehen Wiesbaden" to 0, "Jahn Regensburg" to 0), imageAsset = "elversberg_logo"),
+        Question("3/5 – POZNEJ KLUB PODLE ZNAKU", listOf("Raith Rovers" to 0, "Dunfermline Athletic" to 1, "Greenock Morton" to 0, "Ayr United" to 0), imageAsset = "dunfermline_logo"),
+        Question("4/5 – POZNEJ KLUB PODLE ZNAKU", listOf("FC Voluntari" to 0, "FC Botoșani" to 1, "Petrolul Ploiești" to 0, "UTA Arad" to 0), imageAsset = "botosani_logo"),
+        Question("5/5 – POZNEJ KLUB PODLE ZNAKU", listOf("FC Vaduz" to 1, "FC Lugano" to 0, "FC Winterthur" to 0, "FC Sion" to 0), imageAsset = "vaduz_logo"),
         Question("6. Který klub vyhrál první ročník Poháru mistrů evropských zemí v roce 1956?", listOf("AC Milan" to 0, "Real Madrid" to 1, "Benfica" to 0, "Stade de Reims" to 0)),
         Question("7. Kdo vstřelil hattrick ve finále MS 1966?", listOf("Bobby Charlton" to 0, "Geoff Hurst" to 1, "Pelé" to 0, "Eusébio" to 0)),
         Question("8. Která země vyhrála EURO 1992, přestože se původně nekvalifikovala?", listOf("Švédsko" to 0, "Nizozemsko" to 0, "Dánsko" to 1, "Skotsko" to 0)),
         Question("9. Který klub porazil Barcelonu 4:0 ve finále Ligy mistrů 1994?", listOf("Juventus" to 0, "AC Milan" to 1, "Ajax" to 0, "Manchester United" to 0)),
         Question("10. Kdo získal Zlatý míč v roce 1995?", listOf("George Weah" to 1, "Ronaldo" to 0, "Jürgen Klinsmann" to 0, "Alan Shearer" to 0)),
-        Question("11/15 – POZNEJ STADION", listOf("Allianz Arena" to 0, "Signal Iduna Park" to 1, "Veltins-Arena" to 0, "Olympiastadion Berlin" to 0), imageUrl = "https://commons.wikimedia.org/wiki/Special:FilePath/Signal_iduna_park.jpg"),
-        Question("12/15 – POZNEJ STADION", listOf("Maracanã" to 0, "Estadio Azteca" to 1, "Monumental" to 0, "Wembley" to 0), imageUrl = "https://commons.wikimedia.org/wiki/Special:FilePath/Estadio_azteca.jpg"),
-        Question("13/15 – POZNEJ STADION", listOf("Anfield" to 1, "Stamford Bridge" to 0, "Emirates Stadium" to 0, "Old Trafford" to 0), imageUrl = "https://commons.wikimedia.org/wiki/Special:FilePath/Anfield_Stadium.jpg"),
-        Question("14/15 – POZNEJ STADION", listOf("Stadio Olimpico" to 0, "San Siro" to 1, "Allianz Stadium" to 0, "Diego Armando Maradona Stadium" to 0), imageUrl = "https://commons.wikimedia.org/wiki/Special:FilePath/San_Siro_Stadium_01.jpg"),
-        Question("15/15 – POZNEJ STADION", listOf("Estádio do Dragão" to 0, "José Alvalade" to 0, "Estádio da Luz" to 1, "Santiago Bernabéu" to 0), imageUrl = "https://commons.wikimedia.org/wiki/Special:FilePath/Estadio_da_luz.jpg"),
-        Question("16/20 – POZNEJ HRÁČE", listOf("Andrea Pirlo" to 1, "Xabi Alonso" to 0, "Gennaro Gattuso" to 0, "Andrea Barzagli" to 0), imageUrl = "https://commons.wikimedia.org/wiki/Special:FilePath/Andrea_Pirlo.jpg"),
-        Question("17/20 – POZNEJ HRÁČE", listOf("Didier Drogba" to 0, "Samuel Eto'o" to 1, "Emmanuel Adebayor" to 0, "Nicolas Anelka" to 0), imageUrl = "https://commons.wikimedia.org/wiki/Special:FilePath/Samuel_Eto%27o.jpg"),
-        Question("18/20 – POZNEJ HRÁČE", listOf("Thierry Henry" to 0, "Dennis Bergkamp" to 1, "Robin van Persie" to 0, "Patrick Vieira" to 0), imageUrl = "https://commons.wikimedia.org/wiki/Special:FilePath/Bergkamp.jpg"),
-        Question("19/20 – POZNEJ HRÁČE", listOf("Edgar Davids" to 0, "Clarence Seedorf" to 1, "Patrick Vieira" to 0, "Claude Makélélé" to 0), imageUrl = "https://commons.wikimedia.org/wiki/Special:FilePath/C-Seedorf.jpg"),
-        Question("20/20 – POZNEJ HRÁČE", listOf("Carlos Tevez" to 0, "Sergio Agüero" to 1, "Gonzalo Higuaín" to 0, "Radamel Falcao" to 0), imageUrl = "https://commons.wikimedia.org/wiki/Special:FilePath/Sergio_Ag%C3%BCero.jpg")
+        Question("11/15 – POZNEJ STADION", listOf("Allianz Arena" to 0, "Signal Iduna Park" to 1, "Veltins-Arena" to 0, "Olympiastadion Berlin" to 0), imageAsset = "signal_iduna_park"),
+        Question("12/15 – POZNEJ STADION", listOf("Maracanã" to 0, "Estadio Azteca" to 1, "Monumental" to 0, "Wembley" to 0), imageAsset = "estadio_azteca"),
+        Question("13/15 – POZNEJ STADION", listOf("Anfield" to 1, "Stamford Bridge" to 0, "Emirates Stadium" to 0, "Old Trafford" to 0), imageAsset = "anfield"),
+        Question("14/15 – POZNEJ STADION", listOf("Stadio Olimpico" to 0, "San Siro" to 1, "Allianz Stadium" to 0, "Diego Armando Maradona Stadium" to 0), imageAsset = "san_siro"),
+        Question("15/15 – POZNEJ STADION", listOf("Estádio do Dragão" to 0, "José Alvalade" to 0, "Estádio da Luz" to 1, "Santiago Bernabéu" to 0), imageAsset = "estadio_da_luz"),
+        Question("16/20 – POZNEJ HRÁČE", listOf("Andrea Pirlo" to 1, "Xabi Alonso" to 0, "Gennaro Gattuso" to 0, "Andrea Barzagli" to 0), imageAsset = "pirlo"),
+        Question("17/20 – POZNEJ HRÁČE", listOf("Didier Drogba" to 0, "Samuel Eto'o" to 1, "Emmanuel Adebayor" to 0, "Nicolas Anelka" to 0), imageAsset = "etoo"),
+        Question("18/20 – POZNEJ HRÁČE", listOf("Thierry Henry" to 0, "Dennis Bergkamp" to 1, "Robin van Persie" to 0, "Patrick Vieira" to 0), imageAsset = "bergkamp"),
+        Question("19/20 – POZNEJ HRÁČE", listOf("Edgar Davids" to 0, "Clarence Seedorf" to 1, "Patrick Vieira" to 0, "Claude Makélélé" to 0), imageAsset = "seedorf"),
+        Question("20/20 – POZNEJ HRÁČE", listOf("Carlos Tevez" to 0, "Sergio Agüero" to 1, "Gonzalo Higuaín" to 0, "Radamel Falcao" to 0), imageAsset = "aguero")
     )
 
     private fun startQuestions(name: String, playIntro: Boolean = true) {
@@ -688,7 +688,7 @@ class MainActivity : AppCompatActivity() {
             params()
         )
 
-        question.imageUrl?.let { imageUrl ->
+        question.imageAsset?.let { imageAsset ->
             val questionImage = ImageView(this).apply {
                 adjustViewBounds = true
                 scaleType = ImageView.ScaleType.FIT_CENTER
@@ -698,35 +698,9 @@ class MainActivity : AppCompatActivity() {
             page.addView(questionImage, LinearLayout.LayoutParams(-1, dp(220)).apply {
                 bottomMargin = dp(14)
             })
-            Thread {
-                var connection: java.net.HttpURLConnection? = null
-                try {
-                    connection = (java.net.URL(imageUrl).openConnection() as java.net.HttpURLConnection).apply {
-                        connectTimeout = 15000
-                        readTimeout = 20000
-                        instanceFollowRedirects = true
-                        setRequestProperty("User-Agent", "DOWN-TEST Android App/1.0 (image loader)")
-                        setRequestProperty("Accept", "image/*")
-                    }
-                    val code = connection.responseCode
-                    if (code in 200..299) {
-                        connection.inputStream.use { stream ->
-                            val bitmap = android.graphics.BitmapFactory.decodeStream(stream)
-                            if (bitmap != null) {
-                                runOnUiThread { questionImage.setImageBitmap(bitmap) }
-                            } else {
-                                runOnUiThread { questionImage.setBackgroundColor(Color.rgb(80, 55, 58)) }
-                            }
-                        }
-                    } else {
-                        runOnUiThread { questionImage.setBackgroundColor(Color.rgb(80, 55, 58)) }
-                    }
-                } catch (_: Exception) {
-                    runOnUiThread { questionImage.setBackgroundColor(Color.rgb(80, 55, 58)) }
-                } finally {
-                    connection?.disconnect()
-                }
-            }.start()
+            val imageRes = resources.getIdentifier(imageAsset, "drawable", packageName)
+            if (imageRes != 0) questionImage.setImageResource(imageRes)
+            else questionImage.setBackgroundColor(Color.rgb(80, 55, 58))
         }
 
         question.answers.forEachIndexed { index, answer ->
