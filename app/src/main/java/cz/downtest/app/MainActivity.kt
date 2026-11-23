@@ -613,7 +613,8 @@ class MainActivity : AppCompatActivity() {
         randomizedQuestions = (
             when (name) {
                 "AURA TEST" -> auraQuestions()
-                "GOONER TEST" -> goonerQuestions()                "TROLL TEST" -> trollQuestions()
+                "GOONER TEST" -> goonerQuestions()
+                "TROLL TEST" -> trollQuestions()
                 "GIGACHAD TEST" -> gigachadQuestions()
                 "BRAINROT TEST" -> brainrotQuestions()
                 "NPC TEST" -> npcQuestions()
@@ -704,11 +705,15 @@ class MainActivity : AppCompatActivity() {
                     val isCorrect = answer.second == 1
                     if (!isCorrect) {
                         footballLives--
-                        playRandomClip(6..10) { playRandomClip(11..12) }
-                        if (footballLives <= 0) {
-                            Toast.makeText(this, "Došly ti životy! Začínáš znovu od první otázky.", Toast.LENGTH_LONG).show()
-                            startQuestions("FOOTBALL IQ TEST")
-                        } else {
+                        playRandomClip(6..10) {
+                            playRandomClip(11..12) {
+                                if (footballLives <= 0) {
+                                    Toast.makeText(this, "Došly ti životy! Začínáš znovu od první otázky.", Toast.LENGTH_LONG).show()
+                                    startQuestions("FOOTBALL IQ TEST")
+                                }
+                            }
+                        }
+                        if (footballLives > 0) {
                             selectedAnswers[questionIndex] = index
                             showQuestion()
                         }
@@ -1168,4 +1173,3 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 }
-
