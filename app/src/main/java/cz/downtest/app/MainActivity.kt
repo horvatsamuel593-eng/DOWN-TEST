@@ -738,18 +738,16 @@ class MainActivity : AppCompatActivity() {
                         if (questionIndex in footballMistakesOnQuestion) return@setOnClickListener
                         footballMistakesOnQuestion.add(questionIndex)
                         footballLives = (footballLives - 1).coerceAtLeast(0)
+                        if (footballLives <= 0) {
+                            Toast.makeText(this, "Došly ti životy! Test začíná znovu.", Toast.LENGTH_LONG).show()
+                            startQuestions("FOOTBALL IQ TEST")
+                            return@setOnClickListener
+                        }
                         playRandomClip(6..10) {
-                            playRandomClip(11..12) {
-                                if (footballLives <= 0) {
-                                    Toast.makeText(this, "Došly ti životy! Začínáš znovu od první otázky.", Toast.LENGTH_LONG).show()
-                                    startQuestions("FOOTBALL IQ TEST")
-                                }
-                            }
+                            playRandomClip(11..12)
                         }
-                        if (footballLives > 0) {
-                            selectedAnswers[questionIndex] = index
-                            showQuestion()
-                        }
+                        selectedAnswers[questionIndex] = index
+                        showQuestion()
                         return@setOnClickListener
                     }
                     selectedAnswers[questionIndex] = index
