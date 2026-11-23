@@ -64,6 +64,12 @@ jobs:
             cp app/src/main/java/cz/downtest/app/MainActivity.kt "$PROJECT_DIR/app/src/main/java/cz/downtest/app/MainActivity.kt"
           fi
 
+          if [ -d app/src/main/res/raw ]; then
+            mkdir -p "$PROJECT_DIR/app/src/main/res/raw"
+            cp app/src/main/res/raw/*.mp3 "$PROJECT_DIR/app/src/main/res/raw/"
+            echo "Copied DOWN TEST audio clips into build project."
+          fi
+
           echo "$PROJECT_DIR" > project_path.txt
 
       - name: Create DOWN TEST Android icons
