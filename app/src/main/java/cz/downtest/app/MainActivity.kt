@@ -55,6 +55,7 @@ class MainActivity : AppCompatActivity() {
     private var questionType = "DOWN TEST"
     private var questionIndex = 0
     private var footballLives = 3
+    private val footballMistakesOnQuestion = mutableSetOf<Int>()
     private var randomizedQuestions = listOf<Question>()
     private val selectedAnswers = mutableMapOf<Int, Int>()
 
@@ -637,6 +638,7 @@ class MainActivity : AppCompatActivity() {
         currentMode = name
         questionIndex = 0
         footballLives = 3
+        footballMistakesOnQuestion.clear()
         selectedAnswers.clear()
 
         randomizedQuestions = (
@@ -733,7 +735,9 @@ class MainActivity : AppCompatActivity() {
                     }
                     val isCorrect = answer.second == 1
                     if (!isCorrect) {
-                        footballLives--
+                        if (questionIndex in footballMistakesOnQuestion) return@setOnClickListener
+                        footballMistakesOnQuestion.add(questionIndex)
+                        footballLives = (footballLives - 1).coerceAtLeast(0)
                         playRandomClip(6..10) {
                             playRandomClip(11..12) {
                                 if (footballLives <= 0) {
