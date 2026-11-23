@@ -151,7 +151,9 @@ class MainActivity : AppCompatActivity() {
                     override fun onStart(utteranceId: String?) {}
                     override fun onError(utteranceId: String?) {}
                     override fun onDone(utteranceId: String?) {
-                        // Football quiz advances when the correct-answer audio clip finishes.
+                        if (utteranceId == "football_game_over") {
+                            runOnUiThread { startQuestions("FOOTBALL IQ TEST", playIntro = false) }
+                        }
                     }
                 })
             }
@@ -633,7 +635,7 @@ class MainActivity : AppCompatActivity() {
         Question("20/20 – POZNEJ HRÁČE", listOf("Carlos Tevez" to 0, "Sergio Agüero" to 1, "Gonzalo Higuaín" to 0, "Radamel Falcao" to 0), imageUrl = "https://commons.wikimedia.org/wiki/Special:FilePath/Sergio_Ag%C3%BCero.jpg")
     )
 
-    private fun startQuestions(name: String) {
+    private fun startQuestions(name: String, playIntro: Boolean = true) {
         questionType = name
         currentMode = name
         questionIndex = 0
@@ -656,7 +658,7 @@ class MainActivity : AppCompatActivity() {
         ).shuffled()
 
         showQuestion()
-        if (name == "FOOTBALL IQ TEST") playClip(14)
+        if (name == "FOOTBALL IQ TEST" && playIntro) playClip(14)
     }
 
     private fun showQuestion() {
@@ -756,7 +758,8 @@ class MainActivity : AppCompatActivity() {
                         footballLives = (footballLives - 1).coerceAtLeast(0)
                         if (footballLives <= 0) {
                             Toast.makeText(this, "Došly ti životy! Test začíná znovu.", Toast.LENGTH_LONG).show()
-                            startQuestions("FOOTBALL IQ TEST")
+                            tts?.speak("Došly ti životy. Test začíná znovu.", TextToSpeech.QUEUE_FLUSH, null, "football_game_over")
+                            if (tts == null) startQuestions("FOOTBALL IQ TEST", playIntro = false)
                             return@setOnClickListener
                         }
                         playRandomClip(6..10)
