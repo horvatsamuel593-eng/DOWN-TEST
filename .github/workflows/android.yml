@@ -3,6 +3,9 @@
 
 name: Build DOWN TEST APK
 
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
   push:
@@ -20,6 +23,21 @@ jobs:
     steps:
       - name: Download project
         uses: actions/checkout@v4
+
+      - name: Install cleaned audio in Android resources
+        run: |
+          mkdir -p app/src/main/res/raw
+          for i in $(seq -w 1 14); do
+            test -f "cast_${i}.mp3"
+            cp "cast_${i}.mp3" "app/src/main/res/raw/cast_${i}.mp3"
+          done
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/res/raw/cast_*.mp3
+          if ! git diff --cached --quiet; then
+            git commit -m "Replace app audio with cleaned clips"
+            git push
+          fi
 
       - name: Set up Java
         uses: actions/setup-java@v4
