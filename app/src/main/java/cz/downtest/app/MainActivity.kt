@@ -1025,7 +1025,8 @@ class MainActivity : AppCompatActivity() {
         val clearButton = makeButton("🗑 SMAZAT HISTORII")
         val backButton = makeButton("⬅ ZPĚT")
 
-        page.addView(clearButton, params())        page.addView(backButton, params())
+        page.addView(clearButton, params())
+        page.addView(backButton, params())
 
         clearButton.setOnClickListener {
             AlertDialog.Builder(this)
