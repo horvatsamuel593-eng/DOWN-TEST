@@ -697,16 +697,32 @@ class MainActivity : AppCompatActivity() {
                 bottomMargin = dp(14)
             })
             Thread {
+                var connection: java.net.HttpURLConnection? = null
                 try {
-                    val connection = java.net.URL(imageUrl).openConnection()
-                    connection.connectTimeout = 10000
-                    connection.readTimeout = 15000
-                    connection.getInputStream().use { stream ->
-                        val bitmap = android.graphics.BitmapFactory.decodeStream(stream)
-                        if (bitmap != null) runOnUiThread { questionImage.setImageBitmap(bitmap) }
+                    connection = (java.net.URL(imageUrl).openConnection() as java.net.HttpURLConnection).apply {
+                        connectTimeout = 15000
+                        readTimeout = 20000
+                        instanceFollowRedirects = true
+                        setRequestProperty("User-Agent", "DOWN-TEST Android App/1.0 (image loader)")
+                        setRequestProperty("Accept", "image/*")
+                    }
+                    val code = connection.responseCode
+                    if (code in 200..299) {
+                        connection.inputStream.use { stream ->
+                            val bitmap = android.graphics.BitmapFactory.decodeStream(stream)
+                            if (bitmap != null) {
+                                runOnUiThread { questionImage.setImageBitmap(bitmap) }
+                            } else {
+                                runOnUiThread { questionImage.setBackgroundColor(Color.rgb(80, 55, 58)) }
+                            }
+                        }
+                    } else {
+                        runOnUiThread { questionImage.setBackgroundColor(Color.rgb(80, 55, 58)) }
                     }
                 } catch (_: Exception) {
                     runOnUiThread { questionImage.setBackgroundColor(Color.rgb(80, 55, 58)) }
+                } finally {
+                    connection?.disconnect()
                 }
             }.start()
         }
