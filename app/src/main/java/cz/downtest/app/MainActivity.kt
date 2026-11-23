@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.media.MediaPlayer
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.view.Gravity
@@ -58,6 +59,24 @@ class MainActivity : AppCompatActivity() {
     private val selectedAnswers = mutableMapOf<Int, Int>()
 
     private var tts: TextToSpeech? = null
+    private var audioPlayer: MediaPlayer? = null
+
+    private fun playClip(clipNumber: Int, onComplete: (() -> Unit)? = null) {
+        audioPlayer?.release()
+        val clipId = when (clipNumber) {
+            in 1..14 -> resources.getIdentifier("cast_${clipNumber.toString().padStart(2, '0')}", "raw", packageName)
+            else -> 0
+        }
+        if (clipId == 0) { onComplete?.invoke(); return }
+        audioPlayer = MediaPlayer.create(this, clipId)
+        audioPlayer?.setOnCompletionListener { player -> player.release(); audioPlayer = null; onComplete?.invoke() }
+        audioPlayer?.setOnErrorListener { player, _, _ -> player.release(); audioPlayer = null; onComplete?.invoke(); true }
+        audioPlayer?.start()
+    }
+
+    private fun playRandomClip(range: IntRange, onComplete: (() -> Unit)? = null) {
+        playClip(range.random(), onComplete)
+    }
 
     private var cameraProvider: ProcessCameraProvider? = null
     private var previewView: PreviewView? = null
@@ -100,9 +119,7 @@ class MainActivity : AppCompatActivity() {
                     override fun onStart(utteranceId: String?) {}
                     override fun onError(utteranceId: String?) {}
                     override fun onDone(utteranceId: String?) {
-                        if (utteranceId == "football-correct") {
-                            handler.post { advanceFootballQuestion() }
-                        }
+                        // Football quiz advances when the correct-answer audio clip finishes.
                     }
                 })
             }
@@ -297,8 +314,7 @@ class MainActivity : AppCompatActivity() {
                 "Vůbec nevím" to 5
             )
         ),
-        Question(
-            "Jak často říkáš 67?",
+        Question(            "Jak často říkáš 67?",
             listOf(
                 "Hodně často" to 20,
                 "Občas" to 15,
@@ -597,8 +613,7 @@ class MainActivity : AppCompatActivity() {
         randomizedQuestions = (
             when (name) {
                 "AURA TEST" -> auraQuestions()
-                "GOONER TEST" -> goonerQuestions()
-                "TROLL TEST" -> trollQuestions()
+                "GOONER TEST" -> goonerQuestions()                "TROLL TEST" -> trollQuestions()
                 "GIGACHAD TEST" -> gigachadQuestions()
                 "BRAINROT TEST" -> brainrotQuestions()
                 "NPC TEST" -> npcQuestions()
@@ -609,6 +624,7 @@ class MainActivity : AppCompatActivity() {
         ).shuffled()
 
         showQuestion()
+        if (name == "FOOTBALL IQ TEST") playClip(14)
     }
 
     private fun showQuestion() {
@@ -688,8 +704,7 @@ class MainActivity : AppCompatActivity() {
                     val isCorrect = answer.second == 1
                     if (!isCorrect) {
                         footballLives--
-                        val wrongLines = listOf("Ty jseš ale down!", "Minus tisíc aura!", "Tohle byl vlastní gól do prázdné brány!", "Brácho, tohle nevyšlo!", "VAR tě dneska nezachrání!")
-                        tts?.speak(wrongLines.random(), TextToSpeech.QUEUE_FLUSH, null, "football-answer")
+                        playRandomClip(6..10) { playRandomClip(11..12) }
                         if (footballLives <= 0) {
                             Toast.makeText(this, "Došly ti životy! Začínáš znovu od první otázky.", Toast.LENGTH_LONG).show()
                             startQuestions("FOOTBALL IQ TEST")
@@ -702,12 +717,7 @@ class MainActivity : AppCompatActivity() {
                     selectedAnswers[questionIndex] = index
                     button.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.rgb(48, 190, 105))
                     showQuestion()
-                    val lines = listOf("Ty jseš ale baller!", "Plus tisíc aura!", "Tohle byla čistá paráda!", "Fotbalový mozek zapnutý!", "Absolutní top strop!")
-                    val spoken = lines.random()
-                    val result = tts?.speak(spoken, TextToSpeech.QUEUE_FLUSH, null, "football-correct")
-                    if (result == null || result == TextToSpeech.ERROR) {
-                        handler.postDelayed({ advanceFootballQuestion() }, 1800)
-                    }
+                    playRandomClip(1..5) { advanceFootballQuestion() }
                 } else {
                     selectedAnswers[questionIndex] = index
                     showQuestion()
@@ -897,8 +907,7 @@ class MainActivity : AppCompatActivity() {
             params()
         )
 
-        val description = when {
-            score >= 700 -> "Obrovská aura! 🔥"
+        val description = when {            score >= 700 -> "Obrovská aura! 🔥"
             score >= 300 -> "Dobrá aura! 😎"
             score >= 0 -> "Neutrální aura."
             score >= -400 -> "Aura trochu pokulhává. 😅"
@@ -1151,11 +1160,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         stopCamera()
+        audioPlayer?.release()
+        audioPlayer = null
         tts?.stop()
         tts?.shutdown()
         tts = null
         super.onDestroy()
     }
 }
-
 
