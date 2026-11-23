@@ -743,9 +743,7 @@ class MainActivity : AppCompatActivity() {
                             startQuestions("FOOTBALL IQ TEST")
                             return@setOnClickListener
                         }
-                        playRandomClip(6..10) {
-                            playRandomClip(11..12)
-                        }
+                        playRandomClip(6..10)
                         selectedAnswers[questionIndex] = index
                         showQuestion()
                         return@setOnClickListener
