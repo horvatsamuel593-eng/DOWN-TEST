@@ -58,6 +58,31 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      - name: Download football quiz images for offline APK
+        run: |
+          mkdir -p app/src/main/res/drawable
+          download_image() {
+            local filename="$1"
+            local url="$2"
+            curl -fLsS --retry 3 --retry-delay 2 -A "DOWN-TEST Android build/1.0" "$url" -o "app/src/main/res/drawable/$filename"
+            test -s "app/src/main/res/drawable/$filename"
+          }
+          download_image metalist_logo.png "https://commons.wikimedia.org/wiki/Special:FilePath/FC_Metalist_1925_Kharkiv_logo.png"
+          download_image elversberg_logo.webp "https://commons.wikimedia.org/wiki/Special:FilePath/SV_Elversberg_logo.webp"
+          download_image dunfermline_logo.jpg "https://commons.wikimedia.org/wiki/Special:FilePath/-2019-08-23_Dunfermline_Athletic_F.C._football_Pin_badge.JPG"
+          download_image botosani_logo.png "https://commons.wikimedia.org/wiki/Special:FilePath/FC_Boto%C8%99ani_logo.png"
+          download_image vaduz_logo.png "https://commons.wikimedia.org/wiki/Special:FilePath/FCV_Bildmarke_1-Farbig_Rot.png"
+          download_image signal_iduna_park.jpg "https://commons.wikimedia.org/wiki/Special:FilePath/Signal_iduna_park.jpg"
+          download_image estadio_azteca.jpg "https://commons.wikimedia.org/wiki/Special:FilePath/Estadio_azteca.jpg"
+          download_image anfield.jpg "https://commons.wikimedia.org/wiki/Special:FilePath/Anfield_Stadium.jpg"
+          download_image san_siro.jpg "https://commons.wikimedia.org/wiki/Special:FilePath/San_Siro_Stadium_01.jpg"
+          download_image estadio_da_luz.jpg "https://commons.wikimedia.org/wiki/Special:FilePath/Estadio_da_luz.jpg"
+          download_image pirlo.jpg "https://commons.wikimedia.org/wiki/Special:FilePath/Andrea_Pirlo.jpg"
+          download_image etoo.jpg "https://commons.wikimedia.org/wiki/Special:FilePath/Samuel_Eto%27o.jpg"
+          download_image bergkamp.jpg "https://commons.wikimedia.org/wiki/Special:FilePath/Bergkamp.jpg"
+          download_image seedorf.jpg "https://commons.wikimedia.org/wiki/Special:FilePath/C-Seedorf.jpg"
+          download_image aguero.jpg "https://commons.wikimedia.org/wiki/Special:FilePath/Sergio_Ag%C3%BCero.jpg"
+
       - name: Unpack Android project
         run: |
           mkdir project
@@ -86,6 +111,12 @@ jobs:
             mkdir -p "$PROJECT_DIR/app/src/main/res/raw"
             cp app/src/main/res/raw/*.mp3 "$PROJECT_DIR/app/src/main/res/raw/"
             echo "Copied DOWN TEST audio clips into build project."
+          fi
+
+          if [ -d app/src/main/res/drawable ]; then
+            mkdir -p "$PROJECT_DIR/app/src/main/res/drawable"
+            cp app/src/main/res/drawable/* "$PROJECT_DIR/app/src/main/res/drawable/"
+            echo "Copied football quiz images into build project."
           fi
 
           echo "$PROJECT_DIR" > project_path.txt
