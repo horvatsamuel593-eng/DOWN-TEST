@@ -63,15 +63,46 @@ class MainActivity : AppCompatActivity() {
 
     private fun playClip(clipNumber: Int, onComplete: (() -> Unit)? = null) {
         audioPlayer?.release()
-        val clipId = when (clipNumber) {
-            in 1..14 -> resources.getIdentifier("cast_${clipNumber.toString().padStart(2, '0')}", "raw", packageName)
-            else -> 0
+        audioPlayer = null
+        val clipId = if (clipNumber in 1..14) {
+            resources.getIdentifier("cast_${clipNumber.toString().padStart(2, '0')}", "raw", packageName)
+        } else 0
+        if (clipId == 0) {
+            Toast.makeText(this, "Zvuk $clipNumber nebyl nalezen.", Toast.LENGTH_SHORT).show()
+            onComplete?.invoke()
+            return
         }
-        if (clipId == 0) { onComplete?.invoke(); return }
-        audioPlayer = MediaPlayer.create(this, clipId)
-        audioPlayer?.setOnCompletionListener { player -> player.release(); audioPlayer = null; onComplete?.invoke() }
-        audioPlayer?.setOnErrorListener { player, _, _ -> player.release(); audioPlayer = null; onComplete?.invoke(); true }
-        audioPlayer?.start()
+        try {
+            val player = MediaPlayer()
+            audioPlayer = player
+            player.setOnCompletionListener {
+                if (audioPlayer === player) audioPlayer = null
+                player.release()
+                onComplete?.invoke()
+            }
+            player.setOnErrorListener { _, what, extra ->
+                if (audioPlayer === player) audioPlayer = null
+                player.release()
+                Toast.makeText(this, "Chyba přehrávání zvuku ($what/$extra).", Toast.LENGTH_SHORT).show()
+                onComplete?.invoke()
+                true
+            }
+            val descriptor = resources.openRawResourceFd(clipId)
+            if (descriptor == null) {
+                player.release()
+                audioPlayer = null
+                onComplete?.invoke()
+                return
+            }
+            descriptor.use { player.setDataSource(it.fileDescriptor, it.startOffset, it.length) }
+            player.setOnPreparedListener { it.start() }
+            player.prepareAsync()
+        } catch (e: Exception) {
+            audioPlayer?.release()
+            audioPlayer = null
+            Toast.makeText(this, "Zvuk se nepodařilo připravit: ${e.message}", Toast.LENGTH_SHORT).show()
+            onComplete?.invoke()
+        }
     }
 
     private fun playRandomClip(range: IntRange, onComplete: (() -> Unit)? = null) {
@@ -248,7 +279,6 @@ class MainActivity : AppCompatActivity() {
             label("💀 $name", 30f, purple, true),
             params()
         )
-
         page.addView(
             label("Vyber si způsob testování", 18f, white),
             params()
@@ -498,7 +528,6 @@ class MainActivity : AppCompatActivity() {
         Question("Jak reaguješ na špatný vtip?", listOf("Udělám ještě horší" to 20, "Zasměju se" to 15, "Protočím oči" to 10, "Ignoruju ho" to 5)),
         Question("Jsi ve třídě známý jako troll?", listOf("Totální legenda" to 20, "Docela jo" to 15, "Trochu" to 10, "Vůbec" to 5))
     )
-
     private fun gigachadQuestions(): List<Question> = listOf(
         Question("Jak moc si věříš?", listOf("Maximálně" to 20, "Hodně" to 15, "Tak napůl" to 10, "Moc ne" to 5)),
         Question("Pomůžeš kamarádovi, když potřebuje?", listOf("Vždycky" to 20, "Většinou" to 15, "Někdy" to 10, "Nikdy" to 5)),
@@ -748,7 +777,6 @@ class MainActivity : AppCompatActivity() {
                 else finishQuestions()
             }
         }
-
         if (isFootball) {
             val scroll = ScrollView(this).apply {
                 isFillViewport = true
@@ -997,8 +1025,7 @@ class MainActivity : AppCompatActivity() {
         val clearButton = makeButton("🗑 SMAZAT HISTORII")
         val backButton = makeButton("⬅ ZPĚT")
 
-        page.addView(clearButton, params())
-        page.addView(backButton, params())
+        page.addView(clearButton, params())        page.addView(backButton, params())
 
         clearButton.setOnClickListener {
             AlertDialog.Builder(this)
