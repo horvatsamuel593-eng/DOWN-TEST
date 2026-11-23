@@ -64,8 +64,19 @@ jobs:
           download_image() {
             local filename="$1"
             local url="$2"
-            curl -fLsS --retry 3 --retry-delay 2 -A "DOWN-TEST Android build/1.0" "$url" -o "app/src/main/res/drawable/$filename"
-            test -s "app/src/main/res/drawable/$filename"
+            local target="app/src/main/res/drawable/$filename"
+            echo "Downloading $filename"
+            if curl -fLsS --retry 2 --retry-delay 2 -A "DOWN-TEST Android build/1.0" "$url" -o "$target"; then
+              if test -s "$target" && file "$target" | grep -qiE 'image|webp'; then
+                echo "OK: $filename"
+              else
+                echo "Invalid image response for $filename; removing."
+                rm -f "$target"
+              fi
+            else
+              echo "Image unavailable: $filename (continuing build)"
+              rm -f "$target"
+            fi
           }
           download_image metalist_logo.png "https://commons.wikimedia.org/wiki/Special:FilePath/FC_Metalist_1925_Kharkiv_logo.png"
           download_image elversberg_logo.webp "https://commons.wikimedia.org/wiki/Special:FilePath/SV_Elversberg_logo.webp"
@@ -82,6 +93,7 @@ jobs:
           download_image bergkamp.jpg "https://commons.wikimedia.org/wiki/Special:FilePath/Bergkamp.jpg"
           download_image seedorf.jpg "https://commons.wikimedia.org/wiki/Special:FilePath/C-Seedorf.jpg"
           download_image aguero.jpg "https://commons.wikimedia.org/wiki/Special:FilePath/Sergio_Ag%C3%BCero.jpg"
+          echo "Image-download step completed; missing files will be skipped.";
 
       - name: Unpack Android project
         run: |
